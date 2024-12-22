@@ -52,10 +52,17 @@ atul@atul-Lenovo-G570:~/softbook$ git status
 ```
 9. create a file `.gitignore` in softbook directory and write code in this file. This file is used to ignore some files and directories.
 ```
-
+__pycache__
+alembic/__pycache__
+alembic/version/__pycache__
+database/__pycache__
+database/model/__pycache__
+env
 ```
 
 ## How to create the virtual environment in python?
+Reference: https://fastapi.tiangolo.com/virtual-environments/
+
 1. If in ubuntu python3.10 installed but you want to use python3.12 version then install python3.12 in ubuntu
 2. create the virtual environment with python3.12 version
 ```
@@ -89,4 +96,48 @@ atul@atul-Lenovo-G570:~/softbook$ source env/bin/activate
 # or
 
 (env) atul@atul-Lenovo-G570:~/softbook$ pip3 --version
+```
+
+## How to generate requirements.txt in python?
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip3 freeze > requirements.txt
+```
+
+## How to install `fastapi`?
+Reference: https://fastapi.tiangolo.com/virtual-environments/
+Reference: https://fastapi.tiangolo.com/#installation
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install "fastapi[standard]"
+```
+
+## How to install `sqlalchemy`?
+Reference: https://docs.sqlalchemy.org/en/20/intro.html#installation-guide
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install SQLAlchemy
+```
+
+## How to install postgresql dialects
+Reference: https://docs.sqlalchemy.org/en/20/dialects/postgresql.html
+Reference: https://pypi.org/project/psycopg2-binary/
+Reference: https://www.geeksforgeeks.org/comparing-psycopg2-binary-vs-psycopg2-in-python/
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install psycopg2-binary
+```
+
+## How to install alembic to create migrations in fastapi?
+Reference: https://alembic.sqlalchemy.org/en/latest/front.html#installation
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install alembic
+```
+Below command will create an alembic directory with necessary configuration files.
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ alembic init alembic
+```
+
+## How to set python-dotenv in python?
+Reference: https://pypi.org/project/python-dotenv/
+Reference: https://www.geeksforgeeks.org/using-python-environment-variables-with-python-dotenv/
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install python-dotenv
 ```
