@@ -141,3 +141,4 @@ Below command will create an alembic directory with necessary configuration file
 ```
 (env) atul@atul-Lenovo-G570:~/softbook$ pip install python-dotenv
 ```
+1. create the .env file in project root directory
