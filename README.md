@@ -49,5 +49,44 @@ atul@atul-Lenovo-G570:~/softbook$ git remote -v
 8. check status in git
 ```
 atul@atul-Lenovo-G570:~/softbook$ git status
+```
+9. create a file `.gitignore` in softbook directory and write code in this file. This file is used to ignore some files and directories.
+```
 
+```
+
+## How to create the virtual environment in python?
+1. If in ubuntu python3.10 installed but you want to use python3.12 version then install python3.12 in ubuntu
+2. create the virtual environment with python3.12 version
+```
+atul@atul-Lenovo-G570:~/softbook$ python3.12 -m venv env
+```
+
+3. activate the virtual environment
+```
+atul@atul-Lenovo-G570:~/softbook$ source env/bin/activate
+```
+
+4. After activating virtual environment check python virsion
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ python --version
+
+# or
+
+(env) atul@atul-Lenovo-G570:~/softbook$ python3 --version
+
+# or
+
+(env) atul@atul-Lenovo-G570:~/softbook$ python3.12 --version
+
+```
+5. After activating virtual environment check the PIP
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip --version
+
+# or
+
+(env) atul@atul-Lenovo-G570:~/softbook$ pip3 --version
 ```
