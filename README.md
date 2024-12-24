@@ -286,3 +286,17 @@ class Csgrpm(Base):
 (env) atul@atul-Lenovo-G570:~/softbook$ alembic revision --autogenerate -m "Initial Migration"
 ```
 2. You can see generated migration file in `alembic/versions` directory.
+
+
+## How to install pydantic
+Reference: https://docs.pydantic.dev/latest/install/ 
+
+1. install pydantic email validator
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install 'pydantic[email]'
+```
+
+2. install pydantic timezone validator
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install 'pydantic[timezone]'
+```
