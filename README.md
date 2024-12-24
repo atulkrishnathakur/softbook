@@ -242,3 +242,47 @@ else:
 (env) atul@atul-Lenovo-G570:~/softbook$ pip install python-dotenv
 ```
 1. create the .env file in project root directory
+```
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=123456789
+POSTGRES_SERVER=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=softbookdb
+```
+
+
+## How to create a model in sqlalchemy
+1. create `database/model/__init__.py` file import model
+```
+from .cs_grp_m import Csgrpm
+```
+
+2. create `database/model/cs_grp_m.py` 
+```
+from sqlalchemy import (BigInteger,Column,PrimaryKeyConstraint,Text,String,Integer,DateTime,
+BigInteger,SmallInteger,func,UniqueConstraint,ForeignKey,Identity)
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column
+from sqlalchemy.orm.base import Mapped
+from database.dbconnection import Base
+
+class Csgrpm(Base):
+    __tablename__ = 'cs_grp_m'
+    __table_args__ = (PrimaryKeyConstraint('id', name='cs_grp_m_pkey'),)
+
+    id: Mapped[BigInteger] = mapped_column('id',BigInteger,Identity(start=1, cycle=False),primary_key=True,nullable=False)
+    cs_grp_code: Mapped[String] = mapped_column('cs_grp_code',String(255),nullable=True)
+    cs_grp_name: Mapped[String] = mapped_column('cs_grp_name',String(255),nullable=True)
+    status: Mapped[SmallInteger] = mapped_column('status',SmallInteger,nullable=True,default=1,comment="1=Active,0=Inactive")
+    created_at: Mapped[DateTime] = mapped_column('created_at',DateTime, nullable=True, server_default=func.now())
+    updated_at: Mapped[DateTime] = mapped_column('updated_at',DateTime,nullable=True)
+    created_by: Mapped[BigInteger] = mapped_column('created_by',BigInteger,nullable=True)
+    updated_by: Mapped[BigInteger] = mapped_column('updated_by',BigInteger,nullable=True)
+```
+
+
+## How to generate migration for sqlalchemy model?
+1. run below command to generate a migration file
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ alembic revision --autogenerate -m "Initial Migration"
+```
+2. You can see generated migration file in `alembic/versions` directory.
