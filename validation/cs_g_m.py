@@ -30,7 +30,7 @@ def cs_grp_status_checker(value: int) -> int:
     return value
 
 class CsgmSave(BaseModel):
-    cs_grp_name: Annotated[str, PlainValidator(cs_grp_name_checker)]
+    cs_grp_name: Annotated[str, PlainValidator(cs_grp_name_checker), Field(default="Python3",example="Python", title="The description of the item", max_length=300)]
     cs_grp_code: str | None = None
     status: Annotated[int | None, Field(default=1), PlainValidator(cs_grp_status_checker)]
 
@@ -46,12 +46,12 @@ def dataResponseStatusChecker(value: int)-> int:
     return value
 
 class CsgmDataResponse(BaseModel):
-    id: int
-    cs_grp_name: str
-    cs_grp_code: str | None = None
-    status: Annotated[int, PlainValidator(dataResponseStatusChecker)]
+    id: int = Field(example=1)
+    cs_grp_name: str = Field(example="python")
+    cs_grp_code: str | None = Field(example="py0011")
+    status: Annotated[int, Field(example=1), PlainValidator(dataResponseStatusChecker)]
 
 class CsgmResponse(BaseModel):
-    status_code:int
-    status:bool
+    status_code:int = Field(example=1)
+    status:bool = Field(example=True)
     data: list[CsgmDataResponse] | None = None
