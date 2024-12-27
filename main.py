@@ -9,7 +9,18 @@ def include_router(app):
     app.include_router(api_router)
 
 def start_application():
-    app = FastAPI(DEBUG=True)
+    app = FastAPI(
+        DEBUG=True,
+        title="softbook",
+        summary="This is a fastapi project",
+        description="This is fastapi project with sqlalchemy",
+        version="1.0.0",
+        openapi_url="/softbook.json",
+        docs_url="/softbook-docs",
+        redoc_url="/softbook-redoc",
+        root_path="/api",
+        root_path_in_servers=True,
+        )
     include_router(app)
     return app
 

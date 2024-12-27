@@ -300,3 +300,8 @@ Reference: https://docs.pydantic.dev/latest/install/
 ```
 (env) atul@atul-Lenovo-G570:~/softbook$ pip install 'pydantic[timezone]'
 ```
+
+## About response_model
+- reference: https://fastapi.tiangolo.com/tutorial/response-model/ 
+- reference: https://docs.pydantic.dev/latest/concepts/validators/
+1. response_model used to show in swagger in 200 status code in successfull response. It is not server response. But here, you will see a response for example. If you remove it the you will not see 200 status code for example of response.

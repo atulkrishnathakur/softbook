@@ -19,7 +19,6 @@ def update_user(db, currentUser, profileImage):
     db.refresh(db_user)
     return db_user
 
-
 def get_all_user(db):
     try:
         alluser = db.query(User).all()
