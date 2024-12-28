@@ -251,7 +251,7 @@ POSTGRES_DB=softbookdb
 ```
 
 
-## How to create a model in sqlalchemy
+## How to create a model in sqlalchemy?
 1. create `database/model/__init__.py` file import model
 ```
 from .cs_grp_m import Csgrpm
@@ -288,7 +288,7 @@ class Csgrpm(Base):
 2. You can see generated migration file in `alembic/versions` directory.
 
 
-## How to install pydantic
+## How to install pydantic?
 Reference: https://docs.pydantic.dev/latest/install/ 
 
 1. install pydantic email validator
@@ -306,6 +306,174 @@ Reference: https://docs.pydantic.dev/latest/install/
 - reference: https://docs.pydantic.dev/latest/concepts/validators/
 1. response_model used to show in swagger in 200 status code in successfull response. It is not server response. But here, you will see a response for example. If you remove it the you will not see 200 status code for example of response.
 
-## What is Field() in pydantic
+## What is Field() in pydantic?
 - https://docs.pydantic.dev/latest/concepts/fields/
 - https://fastapi.tiangolo.com/tutorial/body-fields/
+
+
+## How to create custom exception in FastAPI?
+- create the `exception/custom_exception.py` file
+```
+from fastapi import HTTPException, Response, Request
+from fastapi.responses import JSONResponse, ORJSONResponse
+
+class CustomException(HTTPException):
+    def __init__(self, status_code: int, status:bool | None=None, message:str | None=None, data:list | None=None):
+        self.status_code = status_code
+        self.status = status
+        self.message = message
+        self.data = data
+
+async def unicorn_exception_handler(request: Request, exc: CustomException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"status_code":exc.status_code,"status":exc.status,"message":exc.message,"data":exc.data},
+    )
+
+```
+
+- add the custom exception with app in `main.py` file. So, create a `main.py` in root directory of project.
+
+```
+from fastapi import FastAPI
+from fastapi import FastAPI,Depends, HTTPException, Response, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from router.router_base import api_router
+from exception.custom_exception import CustomException,unicorn_exception_handler
+
+def include_router(app):
+    app.include_router(api_router)
+
+def start_application():
+    app = FastAPI(
+        DEBUG=True,
+        title="softbook",
+        summary="This is a fastapi project",
+        description="This is fastapi project with sqlalchemy",
+        version="1.0.0",
+        openapi_url="/softbook.json",
+        docs_url="/softbook-docs",
+        redoc_url="/softbook-redoc",
+        root_path="/api",
+        root_path_in_servers=True,
+        )
+    include_router(app)
+    return app
+
+app = start_application()
+app.add_exception_handler(CustomException,unicorn_exception_handler)
+```
+
+## How to create pydantic validation?
+- create a `validation/cs_g_m.py` file
+```
+from pydantic import (BaseModel,Field, model_validator, EmailStr, ModelWrapValidatorHandler, ValidationError, AfterValidator,BeforeValidator,PlainValidator, ValidatorFunctionWrapHandler)
+from exception.custom_exception import CustomException
+from typing import List
+from typing_extensions import Annotated
+from typing import Any
+from fastapi import status
+from config.message import csgrpmessage
+from config.constants import constants
+
+def cs_grp_name_checker(value: str) -> str:
+    # https://docs.pydantic.dev/latest/concepts/validators/
+    if value == "":
+         raise CustomException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            status=constants.STATUS_BAD_REQUEST,
+            message=csgrpmessage.CS_GRP_NAME,
+            data=[]
+        )
+    return value
+
+def cs_grp_status_checker(value: int) -> int:
+    # https://docs.pydantic.dev/latest/concepts/validators/
+    if value != 0 and value != 1:
+         raise CustomException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            status=constants.STATUS_BAD_REQUEST,
+            message=csgrpmessage.CS_GRP_STATUS,
+            data=[]
+        )
+    return value
+
+class CsgmSave(BaseModel):
+    cs_grp_name: Annotated[str, PlainValidator(cs_grp_name_checker), Field(default="Python3",example="Python", title="The description of the item", max_length=300)]
+    cs_grp_code: str | None = None
+    status: Annotated[int | None, Field(default=1), PlainValidator(cs_grp_status_checker)]
+
+def dataResponseStatusChecker(value: int)-> int:
+    # https://docs.pydantic.dev/latest/concepts/validators/
+    if value != 0 and value != 1:
+        raise CustomException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            status=constants.STATUS_BAD_REQUEST,
+            message="only 0 and 1 will be get in response",
+            data=[]
+        )    
+    return value
+
+class CsgmDataResponse(BaseModel):
+    id: int = Field(example=1)
+    cs_grp_name: str = Field(example="python")
+    cs_grp_code: str | None = Field(example="py0011")
+    status: Annotated[int, Field(example=1), PlainValidator(dataResponseStatusChecker)]
+
+class CsgmResponse(BaseModel):
+    status_code:int = Field(example=1)
+    status:bool = Field(example=True)
+    data: list[CsgmDataResponse] | None = None
+
+```
+- CsgmSave class used to validate data of request in router.
+- CsgmResponse class used to validate data of response in router
+- create `router/api/cs_g_m_route.py` file for route
+```
+from fastapi import APIRouter,Depends,status,HTTPException
+from typing import Annotated
+from sqlalchemy.orm import Session
+from database.session import get_db
+from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
+from fastapi.encoders import jsonable_encoder
+from validation.cs_g_m import CsgmSave,CsgmResponse
+from fastapi.responses import JSONResponse, ORJSONResponse
+from database.model_functions.cs_grp_m import save_new_cs_group
+from exception.custom_exception import CustomException
+from pydantic import ValidationError
+
+router = APIRouter()
+
+@router.post("/cs-g-m-save", response_model=CsgmResponse, name="csgmsave")
+def csgmSave(csgm: CsgmSave, db:Session = Depends(get_db)):
+    try:
+        insertedData = save_new_cs_group(db=db, csgm=csgm)
+        http_status_code = status.HTTP_200_OK
+        datalist = list()
+        
+        datadict = {}
+        datadict['id'] = insertedData.id
+        datadict['cs_grp_name'] = insertedData.cs_grp_name
+        datadict['cs_grp_code'] = insertedData.cs_grp_code
+        datadict['status'] = insertedData.status
+        datalist.append(datadict)
+        response_dict = {
+            "status_code": http_status_code,
+            "status":True,
+            "data":datalist
+        }
+        # by help of jsonable_encode we are sending response in json with pydantic validation
+        #response = JSONResponse(content=jsonable_encoder(response_dict),status_code=http_status_code)
+        #response = JSONResponse(content=response_dict,status_code=http_status_code)
+        response_data = CsgmResponse(**response_dict) 
+        response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        return response
+    except ValidationError as e:
+        raise CustomException(
+            status_code=422,
+            status=False,
+            message=e.errors(),
+            data=[]
+        )
+```
