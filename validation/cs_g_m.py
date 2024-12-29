@@ -72,6 +72,7 @@ class CsgmDataResponse(BaseModel):
 class CsgmResponse(BaseModel):
     status_code:int = Field(example=1)
     status:bool = Field(example=True)
+    message:str | None = None
     data: list[CsgmDataResponse] | None = None
 
 class CsgmUpdate(BaseModel):

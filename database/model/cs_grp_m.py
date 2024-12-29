@@ -16,3 +16,4 @@ class Csgrpm(Base):
     updated_at: Mapped[DateTime] = mapped_column('updated_at',DateTime,nullable=True)
     created_by: Mapped[BigInteger] = mapped_column('created_by',BigInteger,nullable=True)
     updated_by: Mapped[BigInteger] = mapped_column('updated_by',BigInteger,nullable=True)
+    deleted_at: Mapped[DateTime] = mapped_column('deleted_at',DateTime,nullable=True,default=None)

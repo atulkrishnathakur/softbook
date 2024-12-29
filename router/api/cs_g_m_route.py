@@ -6,9 +6,10 @@ from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
 from fastapi.encoders import jsonable_encoder
 from validation.cs_g_m import CsgmSave,CsgmResponse,CsgmUpdate,id_checker
 from fastapi.responses import JSONResponse, ORJSONResponse
-from database.model_functions.cs_grp_m import (save_new_cs_group,get_all_data,get_all_active_data,get_data_by_id,update_by_id)
+from database.model_functions.cs_grp_m import (save_new_cs_group,get_all_data,get_all_active_data,get_data_by_id,update_by_id,soft_delete)
 from exception.custom_exception import CustomException
 from pydantic import (BaseModel,Field, model_validator, EmailStr, ModelWrapValidatorHandler, ValidationError, AfterValidator,BeforeValidator,PlainValidator, ValidatorFunctionWrapHandler)
+from config.message import csgrpmessage
 
 router = APIRouter()
 
@@ -28,6 +29,7 @@ def csgmSave(csgm: CsgmSave, db:Session = Depends(get_db)):
         response_dict = {
             "status_code": http_status_code,
             "status":True,
+            "message":csgrpmessage.CS_GRP_SAVE_MESSAGE,
             "data":datalist
         }
         # by help of jsonable_encode we are sending response in json with pydantic validation
@@ -61,6 +63,7 @@ def getCsgmList(db:Session = Depends(get_db)):
             response_dict = {
                 "status_code": http_status_code,
                 "status":True,
+                "message":csgrpmessage.CS_GRP_LIST_MESSAGE,
                 "data":datalist
             }
         response_data = CsgmResponse(**response_dict) 
@@ -91,6 +94,7 @@ def getCsgmList(db:Session = Depends(get_db)):
             response_dict = {
                 "status_code": http_status_code,
                 "status":True,
+                "message":csgrpmessage.CS_GRP_ACTIVE_LIST_MESSAGE,
                 "data":datalist
             }
         response_data = CsgmResponse(**response_dict) 
@@ -124,6 +128,36 @@ def csgmUpdate(
         response_dict = {
             "status_code": http_status_code,
             "status":True,
+            "message":csgrpmessage.CS_GRP_UPDATE_MESSAGE,
+            "data":datalist
+        }
+
+        response_data = CsgmResponse(**response_dict) 
+        response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        return response
+
+    except ValidationError as e:
+        raise CustomException(
+            status_code=422,
+            status=False,
+            message=e.errors(),
+            data=[]
+        )
+
+@router.post("/cs-g-m-soft-delete/{id}", response_model=CsgmResponse, name="csgmsoftdelete")
+def csgmDelete(
+    id:int = Depends(id_checker),
+    db:Session = Depends(get_db)
+    ):
+    try:
+        deletedData = soft_delete(db=db,id=id)
+        http_status_code = status.HTTP_200_OK
+        datalist = list()
+
+        response_dict = {
+            "status_code": http_status_code,
+            "status":True,
+            "message":csgrpmessage.DELETE_SUCCESS,
             "data":datalist
         }
 
