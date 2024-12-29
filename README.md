@@ -59,6 +59,23 @@ database/__pycache__
 database/model/__pycache__
 env
 ```
+## how to create new branch in git?
+- create a new branch like `v1-pydantic-validation`
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ git branch v1-pydantic-validation
+```
+- check branch list. `*` indicate the current branch
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ git branch
+```
+- switch master to new branch 
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ git checkout v1-pydantic-validation
+```
+- push new branch on github. If branch is not in github repository then branch will be push with source code. If branch is already available  in github then only source code will be push. 
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ git push origin v1-pydantic-validation
+```
 
 ## How to create the virtual environment in python?
 - Reference: https://fastapi.tiangolo.com/virtual-environments/

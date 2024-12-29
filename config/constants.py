@@ -10,5 +10,7 @@ class Constants:
     STATUS_FORBIDDEN=False
     STATUS_BAD_REQUEST=False
     STATUS_OK=True
+    DB_ACTIVE_STATUS = 1
+    DB_INACTIVE_STATUS = 0
 
 constants = Constants()

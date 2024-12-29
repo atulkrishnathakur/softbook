@@ -45,6 +45,24 @@ def dataResponseStatusChecker(value: int)-> int:
         )    
     return value
 
+def id_checker(id)->int:
+    if id == "0" or id == 0 or id == None:
+        raise CustomException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            status=constants.STATUS_BAD_REQUEST,
+            message="Not acceptable value",
+            data=[]
+        )
+    if not id.isdigit():
+        raise CustomException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            status=constants.STATUS_BAD_REQUEST,
+            message="Only integer value will be accecept in id",
+            data=[]
+        )
+    return id
+        
+
 class CsgmDataResponse(BaseModel):
     id: int = Field(example=1)
     cs_grp_name: str = Field(example="python")
@@ -55,3 +73,7 @@ class CsgmResponse(BaseModel):
     status_code:int = Field(example=1)
     status:bool = Field(example=True)
     data: list[CsgmDataResponse] | None = None
+
+class CsgmUpdate(BaseModel):
+    cs_grp_name: Annotated[str, PlainValidator(cs_grp_name_checker), Field(default="Python3",example="Python", title="The description of the item", max_length=300)]
+    cs_grp_code: str | None = None
