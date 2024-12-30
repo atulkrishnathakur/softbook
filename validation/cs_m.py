@@ -11,7 +11,7 @@ from database.model_functions import cs_grp_m
 def cs_name_checker(value: str) -> str:
     # https://docs.pydantic.dev/latest/concepts/validators/
     if value == "":
-         raise CustomException(
+        raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
             status=constants.STATUS_BAD_REQUEST,
             message=csmmessage.CS_NAME,
@@ -22,7 +22,7 @@ def cs_name_checker(value: str) -> str:
 def cs_status_checker(value: int) -> int:
     # https://docs.pydantic.dev/latest/concepts/validators/
     if value != 0 and value != 1:
-         raise CustomException(
+        raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
             status=constants.STATUS_BAD_REQUEST,
             message=csmmessage.CS_STATUS,

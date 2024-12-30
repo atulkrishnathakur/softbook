@@ -10,7 +10,7 @@ from config.constants import constants
 def cs_grp_name_checker(value: str) -> str:
     # https://docs.pydantic.dev/latest/concepts/validators/
     if value == "":
-         raise CustomException(
+        raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
             status=constants.STATUS_BAD_REQUEST,
             message=csgrpmessage.CS_GRP_NAME,
@@ -21,7 +21,7 @@ def cs_grp_name_checker(value: str) -> str:
 def cs_grp_status_checker(value: int) -> int:
     # https://docs.pydantic.dev/latest/concepts/validators/
     if value != 0 and value != 1:
-         raise CustomException(
+        raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
             status=constants.STATUS_BAD_REQUEST,
             message=csgrpmessage.CS_GRP_STATUS,
@@ -40,7 +40,7 @@ def dataResponseStatusChecker(value: int)-> int:
         raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
             status=constants.STATUS_BAD_REQUEST,
-            message="only 0 and 1 will be get in response",
+            message=csgrpmessage.CS_GRP_STATUS_RES,
             data=[]
         )    
     return value
@@ -50,19 +50,18 @@ def id_checker(id)->int:
         raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
             status=constants.STATUS_BAD_REQUEST,
-            message="Not acceptable value",
+            message=csgrpmessage.CS_GRP_ID_REQ,
             data=[]
         )
     if not id.isdigit():
         raise CustomException(
             status_code=status.HTTP_400_BAD_REQUEST,
             status=constants.STATUS_BAD_REQUEST,
-            message="Only integer value will be accecept in id",
+            message=csgrpmessage.CS_GRP_ID_REQ,
             data=[]
         )
     return id
         
-
 class CsgmDataResponse(BaseModel):
     id: int = Field(example=1)
     cs_grp_name: str = Field(example="python")
@@ -78,3 +77,9 @@ class CsgmResponse(BaseModel):
 class CsgmUpdate(BaseModel):
     cs_grp_name: Annotated[str, PlainValidator(cs_grp_name_checker), Field(default="Python3",example="Python", title="The description of the item", max_length=300)]
     cs_grp_code: str | None = None
+
+class Status422Response(BaseModel):
+    status_code:int = Field(example=422)
+    status:bool = Field(example=True)
+    message:str | None = "Not Processable data"
+    data:list | None = []

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database.session import get_db
 from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
 from fastapi.encoders import jsonable_encoder
-from validation.cs_g_m import CsgmSave,CsgmResponse,CsgmUpdate,id_checker
+from validation.cs_g_m import CsgmSave,CsgmResponse,CsgmUpdate,id_checker,Status422Response
 from fastapi.responses import JSONResponse, ORJSONResponse
 from database.model_functions.cs_grp_m import (save_new_cs_group,get_all_data,get_all_active_data,get_data_by_id,update_by_id,soft_delete)
 from exception.custom_exception import CustomException
@@ -39,14 +39,16 @@ def csgmSave(csgm: CsgmSave, db:Session = Depends(get_db)):
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         return response
     except ValidationError as e:
-        raise CustomException(
-            status_code=422,
-            status=False,
-            message=e.errors(),
-            data=[]
-        )
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":e.errors()
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        return response
 
-@router.get("/cs-g-m-list", response_model=CsgmResponse, name="csgmlist")
+@router.get("/cs-g-m-list", response_model=CsgmResponse,responses={status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response}}, name="csgmlist")
 def getCsgmList(db:Session = Depends(get_db)):
     try:
         allDbData = get_all_data(db=db)
@@ -70,12 +72,14 @@ def getCsgmList(db:Session = Depends(get_db)):
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         return response
     except ValidationError as e:
-        raise CustomException(
-            status_code=422,
-            status=False,
-            message=e.errors(),
-            data=[]
-        )
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":e.errors()
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        return response
 
 @router.get("/cs-g-m-active-list", response_model=CsgmResponse, name="csgmactivelist")
 def getCsgmList(db:Session = Depends(get_db)):
@@ -101,12 +105,14 @@ def getCsgmList(db:Session = Depends(get_db)):
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         return response
     except ValidationError as e:
-        raise CustomException(
-            status_code=422,
-            status=False,
-            message=e.errors(),
-            data=[]
-        )
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":e.errors()
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        return response
 
 @router.post("/cs-g-m-update/{id}", response_model=CsgmResponse, name="csgmupdate")
 def csgmUpdate(
@@ -137,12 +143,14 @@ def csgmUpdate(
         return response
 
     except ValidationError as e:
-        raise CustomException(
-            status_code=422,
-            status=False,
-            message=e.errors(),
-            data=[]
-        )
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":e.errors()
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        return response
 
 @router.post("/cs-g-m-soft-delete/{id}", response_model=CsgmResponse, name="csgmsoftdelete")
 def csgmDelete(
@@ -166,9 +174,11 @@ def csgmDelete(
         return response
 
     except ValidationError as e:
-        raise CustomException(
-            status_code=422,
-            status=False,
-            message=e.errors(),
-            data=[]
-        )
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":e.errors()
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        return response

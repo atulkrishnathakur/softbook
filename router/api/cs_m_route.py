@@ -39,9 +39,11 @@ def csmSave(csm: CsmSave, db:Session = Depends(get_db)):
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         return response
     except ValidationError as e:
-        raise CustomException(
-            status_code=422,
-            status=False,
-            message=e.errors(),
-            data=[]
-        )
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":e.errors()
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        return response
