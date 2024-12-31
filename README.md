@@ -69,12 +69,19 @@ env
 (env) atul@atul-Lenovo-G570:~/softbook$ git branch
 ```
 - switch master to new branch 
-```
+``` 
 (env) atul@atul-Lenovo-G570:~/softbook$ git checkout v1-pydantic-validation
 ```
 - push new branch on github. If branch is not in github repository then branch will be push with source code. If branch is already available  in github then only source code will be push. 
 ```
 (env) atul@atul-Lenovo-G570:~/softbook$ git push origin v1-pydantic-validation
+```
+## How to merge a branch in other branch
+1. Here merge `v1-pydantic-validation` branch in `master` brach.
+2. first swich to `master` branch
+3. run below command
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ git merge v1-pydantic-validation
 ```
 
 ## How to create the virtual environment in python?
