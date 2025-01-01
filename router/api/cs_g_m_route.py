@@ -10,6 +10,7 @@ from database.model_functions.cs_grp_m import (save_new_cs_group,get_all_data,ge
 from exception.custom_exception import CustomException
 from pydantic import (BaseModel,Field, model_validator, EmailStr, ModelWrapValidatorHandler, ValidationError, AfterValidator,BeforeValidator,PlainValidator, ValidatorFunctionWrapHandler)
 from config.message import csgrpmessage
+from config.logconfig import loglogger
 
 router = APIRouter()
 
@@ -37,8 +38,9 @@ def csgmSave(csgm: CsgmSave, db:Session = Depends(get_db)):
         #response = JSONResponse(content=response_dict,status_code=http_status_code)
         response_data = CsgmResponse(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
         return response
-    except ValidationError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -46,6 +48,7 @@ def csgmSave(csgm: CsgmSave, db:Session = Depends(get_db)):
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response
 
 @router.get("/cs-g-m-list", response_model=CsgmResponse,responses={status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response}}, name="csgmlist")
@@ -70,8 +73,9 @@ def getCsgmList(db:Session = Depends(get_db)):
             }
         response_data = CsgmResponse(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
         return response
-    except ValidationError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -79,6 +83,7 @@ def getCsgmList(db:Session = Depends(get_db)):
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response
 
 @router.get("/cs-g-m-active-list", response_model=CsgmResponse, name="csgmactivelist")
@@ -103,8 +108,9 @@ def getCsgmList(db:Session = Depends(get_db)):
             }
         response_data = CsgmResponse(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
         return response
-    except ValidationError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -112,6 +118,7 @@ def getCsgmList(db:Session = Depends(get_db)):
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response
 
 @router.post("/cs-g-m-update/{id}", response_model=CsgmResponse, name="csgmupdate")
@@ -140,9 +147,10 @@ def csgmUpdate(
 
         response_data = CsgmResponse(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
         return response
 
-    except ValidationError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -150,6 +158,7 @@ def csgmUpdate(
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response
 
 @router.post("/cs-g-m-soft-delete/{id}", response_model=CsgmResponse, name="csgmsoftdelete")
@@ -171,9 +180,9 @@ def csgmDelete(
 
         response_data = CsgmResponse(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
         return response
-
-    except ValidationError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -181,4 +190,5 @@ def csgmDelete(
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response

@@ -501,3 +501,32 @@ def csgmSave(csgm: CsgmSave, db:Session = Depends(get_db)):
             data=[]
         )
 ```
+
+## logging in FastAPI using loguru
+Reference: https://loguru.readthedocs.io/en/stable/overview.html
+Reference: https://loguru.readthedocs.io/en/stable/api/logger.html
+
+1. install the loguru package
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install loguru
+```
+2. create `config/logconfig.py` file. If you use `logger.remove()` then log data will be write only in log file but if you not use `logger.remove()` then log data will be print in terminal and data will be append in log file.
+
+```
+from loguru import logger
+
+logger.remove() # disable to print log data in linux teminal or console
+logger.add("logs/softbook_{time:DD_MM_YYYY}.log", format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}")
+loglogger = logger
+```
+
+3. import the `loglogger` in python file and write message in log file
+```
+from config.logconfig import loglogger
+......................
+......................
+......................
+
+loglogger.debug("RESPONSE:"+str(response_data.dict()))
+
+```

@@ -8,6 +8,7 @@ from sqlalchemy import func
 from config.constants import constants
 from database.dbconnection import engine
 from fastapi.responses import JSONResponse, ORJSONResponse
+from config.logconfig import loglogger
 
 def save_new_cs_group(db, csgm):
     db_csgm = Csgrpm(
@@ -26,7 +27,7 @@ def get_all_data(db):
         result = db.execute(stmt)
         data = result.all()
         return data
-    except ValueError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -34,8 +35,8 @@ def get_all_data(db):
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response
-
 
 def get_all_active_data(db):
     try:
@@ -43,7 +44,7 @@ def get_all_active_data(db):
         result = db.execute(stmt)
         data = result.all()
         return data
-    except ValueError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -59,7 +60,7 @@ def get_data_by_id(db,id):
         result = db.execute(stmt)
         data = result.first()
         return data
-    except ValueError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -67,6 +68,7 @@ def get_data_by_id(db,id):
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response
 
 def update_by_id(db,csgm,id):
@@ -76,7 +78,7 @@ def update_by_id(db,csgm,id):
         db.commit()
         updatedData = get_data_by_id(db,id)
         return updatedData
-    except ValueError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -84,6 +86,7 @@ def update_by_id(db,csgm,id):
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response
 
 def soft_delete(db,**kwargs):
@@ -95,7 +98,7 @@ def soft_delete(db,**kwargs):
         db.execute(stmt)
         db.commit()
         return True
-    except ValueError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -103,4 +106,5 @@ def soft_delete(db,**kwargs):
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response

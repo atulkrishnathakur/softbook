@@ -10,6 +10,7 @@ from database.model_functions.cs_m import (save_new_cs,get_all_data,get_all_acti
 from exception.custom_exception import CustomException
 from pydantic import (BaseModel,Field, model_validator, EmailStr, ModelWrapValidatorHandler, ValidationError, AfterValidator,BeforeValidator,PlainValidator, ValidatorFunctionWrapHandler)
 from config.message import csmmessage
+from config.logconfig import loglogger
 
 router = APIRouter()
 
@@ -37,8 +38,9 @@ def csmSave(csm: CsmSave, db:Session = Depends(get_db)):
         }
         response_data = CsmResponse(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
         return response
-    except ValidationError as e:
+    except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
             "status_code": http_status_code,
@@ -46,4 +48,5 @@ def csmSave(csm: CsmSave, db:Session = Depends(get_db)):
             "message":e.errors()
         }
         response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
         return response
