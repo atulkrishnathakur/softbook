@@ -530,3 +530,41 @@ from config.logconfig import loglogger
 loglogger.debug("RESPONSE:"+str(response_data.dict()))
 
 ```
+
+## Authentication in FastAPI
+Reference: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt
+Reference: https://pyjwt.readthedocs.io/en/latest/installation.html
+1. install the python-multipart
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install python-multipart
+```
+
+2. install pyjwt
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install pyjwt
+```
+
+3. install pyjwt[crypto]
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install pyjwt[crypto]
+```
+
+4. install passlib
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install passlib
+```
+
+5. install passlib[bcrypt]
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install passlib[bcrypt]
+```
+
+6. Create a random secret key that will be used to sign the JWT tokens
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ openssl rand -hex 32
+```
