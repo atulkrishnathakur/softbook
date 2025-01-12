@@ -531,7 +531,7 @@ loglogger.debug("RESPONSE:"+str(response_data.dict()))
 
 ```
 
-## Authentication in FastAPI
+## Some important installation for authentication in FastAPI
 Reference: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt
 Reference: https://pyjwt.readthedocs.io/en/latest/installation.html
 1. install the python-multipart
@@ -564,7 +564,244 @@ Reference: https://pyjwt.readthedocs.io/en/latest/installation.html
 ```
 
 6. Create a random secret key that will be used to sign the JWT tokens
-
 ```
 (env) atul@atul-Lenovo-G570:~/softbook$ openssl rand -hex 32
+```
+- copy the secrete key and add a key in .env file with secrete key
+```
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=123456789
+POSTGRES_SERVER=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=softbookdb
+SECRET_KEY=a9e53f2c3db459d04f147f11a056a705f87fbbba6204a42efb9a37b4aed9cf48
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
+
+## Registration for authentication
+- create the `router/api/emp_route.py` file for route
+```
+from fastapi import APIRouter,Depends,status
+from sqlalchemy.orm import Session
+from database.session import get_db
+from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
+from validation.emp_m import EmpSchemaIn,EmpSchemaOut,Status422Response,Status400Response
+from fastapi.responses import JSONResponse, ORJSONResponse
+from database.model_functions.emp_m import save_new_empm
+from exception.custom_exception import CustomException
+from config.message import empm_message
+from config.logconfig import loglogger
+
+router = APIRouter()
+
+@router.post(
+    "/emp-m-save",
+    response_model=EmpSchemaOut,
+    responses={
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response},
+        status.HTTP_400_BAD_REQUEST: {"model": Status400Response}
+    },
+    name="empmsave"
+    )
+def empSave(empm: EmpSchemaIn, db:Session = Depends(get_db)):
+    # I keep duplicate_email_checker function outside of try block because duplicate_email_checker function raise an exception. If duplicate_email_checker keep inside function then Exception class will except it because Exception is parrent class.
+    # Main point is raise keyword use the outside of try block.
+    EmpSchemaIn.duplicate_email_checker(db,empm.email)
+    try:
+        insertedData = save_new_empm(db=db, empm=empm)
+        http_status_code = status.HTTP_200_OK
+        datalist = list()
+        
+        datadict = {}
+        datadict['id'] = insertedData.id
+        datadict['emp_name'] = insertedData.emp_name
+        datadict['email'] = insertedData.email
+        datadict['status'] = insertedData.status
+        datadict['mobile'] = insertedData.mobile
+        datalist.append(datadict)
+        response_dict = {
+            "status_code": http_status_code,
+            "status":True,
+            "message":empm_message.SAVE_SUCCESS,
+            "data":datalist
+        }
+        response_data = EmpSchemaOut(**response_dict) 
+        response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
+        return response
+    except Exception as e:
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":"Type:"+str(type(e))+", Message:"+str(e)
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
+        return response
+```
+
+- create `validation/emp_m.py` file for pydantic schema
+```
+from pydantic import (BaseModel,Field, model_validator, EmailStr, ModelWrapValidatorHandler, ValidationError, AfterValidator,BeforeValidator,PlainValidator, ValidatorFunctionWrapHandler)
+from typing import List
+from exception.custom_exception import CustomException
+from fastapi import status,Depends
+from config.message import empm_message
+from config.constants import constants
+from typing_extensions import Annotated
+from database.model_functions import emp_m
+
+class BaseEmpSchema(BaseModel):
+    emp_name: str = Field(example="Atul")
+    email: EmailStr = Field(example="atul@comsysapp.com")
+    mobile: str | None = Field(example="000000")
+    status: int | None = Field(default=1)
+
+class EmpSchemaIn(BaseEmpSchema):
+    password: str = Field(example="aa")
+    confirm_password:str = Field(example="aa")
+    
+    def duplicate_email_checker(db,email):
+        empmObj = emp_m.get_data_by_email(db,email)
+        if(empmObj is not None):
+            raise CustomException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                status=constants.STATUS_BAD_REQUEST,
+                message=empm_message.EMAIL_DUPLICATE,
+                data=[]
+            )
+
+    @model_validator(mode='after')
+    def check_passwords_match(self):
+        pw1 = self.password
+        pw2 = self.confirm_password
+        if(pw1 is None):
+            raise CustomException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                status=constants.STATUS_BAD_REQUEST,
+                message=empm_message.EMP_M_PASS_REQUIRED,
+                data=[]
+            )
+        elif(pw2 is None):
+            raise CustomException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                status=constants.STATUS_BAD_REQUEST,
+                message=empm_message.EMP_M_C_PASS_REQUIRED,
+                data=[]
+            )
+        elif pw1 != pw2:
+            raise CustomException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                status=constants.STATUS_BAD_REQUEST,
+                message=empm_message.PASS_NOT_MATCH,
+                data=[]
+            )
+        return self
+
+def dataResponseStatusChecker(value: int)-> int:
+    # https://docs.pydantic.dev/latest/concepts/validators/
+    if value != 0 and value != 1:
+        raise CustomException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            status=constants.STATUS_BAD_REQUEST,
+            message="only 0 and 1 will be get in response",
+            data=[]
+        )    
+    return value
+
+class EmpDataResponse(BaseModel):
+    id: int = Field(example=1)
+    emp_name: str = Field(example="abcd")
+    email: EmailStr = Field(example="atul@comsysapp.com") 
+    mobile: str | None = Field(example="000000")
+    status: Annotated[int, Field(example=1), PlainValidator(dataResponseStatusChecker)]
+
+class EmpSchemaOut(BaseModel):
+    status_code:int = Field(example=1)
+    status:bool = Field(example=True)
+    message:str | None = None
+    data: list[EmpDataResponse] | None = None
+
+class EmpInDB(BaseEmpSchema):
+    hashed_password: str
+
+class Status422Response(BaseModel):
+    status_code:int = Field(default=422)
+    status:bool = Field(default=False)
+    message:str | None = "Not Processable data"
+    data:list | None = []
+
+class Status400Response(BaseModel):
+    status_code:int = Field(default=400)
+    status:bool = Field(default=False)
+    message:str | None = "Bad request"
+    data:list | None = []
+
+```
+
+- create the `core\hashing.py` file to generate hashed password
+
+```
+from passlib.context import CryptContext
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class HashData():
+    @staticmethod
+    def create_password_hash(password):
+        return pwd_context.hash(password)
+
+    @staticmethod 
+    def verify_password(plain_password, hashed_password):
+        return pwd_context.verify(plain_password, hashed_password)
+        
+```
+
+- create a `database/model_functions/emp_m.py`
+```
+from database.model.emp_m import Empm
+from fastapi import Depends, status
+from sqlalchemy import select
+from sqlalchemy import insert
+from sqlalchemy import update
+from sqlalchemy import delete
+from sqlalchemy import func
+from core.hashing import HashData
+from config.constants import constants
+from database.dbconnection import engine
+from config.logconfig import loglogger
+
+def save_new_empm(db, empm):
+    db_empm = Empm(
+        emp_name=empm.emp_name,
+        email=empm.email,
+        mobile=empm.mobile,
+        status=empm.status,
+        password=HashData.create_password_hash(empm.password)
+        )
+    db.add(db_empm)
+    db.commit()
+    db.refresh(db_empm)
+    return db_empm
+
+def get_data_by_email(db,email):
+    try:
+        stmt = select(Empm).where(Empm.email == email)
+        result = db.execute(stmt)
+        data = result.first()
+        return data
+    except Exception as e:
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":e.errors()
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
+        return response
+
 ```

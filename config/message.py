@@ -29,3 +29,17 @@ class CsmMessage:
     CS_GRP_M_ID_NOT_EXIST: str = "Given cs_grp_m_id is not exist"
     
 csmmessage = CsmMessage()
+
+
+class EmpmMessage:
+    EMPM_NAME: str = "Emp m name is required"
+    EMP_STATUS: str = "emp status is only 0 or 1"
+    EMP_M_ID_MESSAGE: str = "0 or empty value is not acceptable"
+    EMP_M_PASS_REQUIRED: str = "Password required"
+    EMP_M_C_PASS_REQUIRED: str = "Confirm password required"
+    PASS_NOT_MATCH: str = "Password and confirm password not match"
+    SAVE_SUCCESS: str = "Emp m successfully created"
+    EMAIL_DUPLICATE: str = "Duplicate email found"
+
+empm_message = EmpmMessage()
+

@@ -16,9 +16,10 @@ router = APIRouter()
 
 @router.post("/csm-save", response_model=CsmResponse, name="csmsave")
 def csmSave(csm: CsmSave, db:Session = Depends(get_db)):
-    try:
-        CsmSave.cs_grpm_id_check_db(db,csm.cs_grp_m_id)
-        
+    # I keep cs_grpm_id_check_db function outside of try block because cs_grpm_id_check_db function raise an exception. If cs_grpm_id_check_db keep inside function then Exception class will except it because Exception is parrent class.
+    # Main point is raise keyword use the outside of try block.
+    CsmSave.cs_grpm_id_check_db(db,csm.cs_grp_m_id)
+    try:        
         insertedData = save_new_cs(db=db, csm=csm)
         http_status_code = status.HTTP_200_OK
         datalist = list()

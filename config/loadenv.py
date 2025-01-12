@@ -10,5 +10,10 @@ class Envconst:
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", 5432)
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "atul")
     DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
-    
+    ALGORITHM =  os.getenv("ALGORITHM")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+    TOKEN_TYPE: str = "bearer"
+    AUTH_HEADER: Dict[str,str] = {"WWW-Authenticate": "Bearer"}
+    API_KEY_HEADER_NAME="ACCESS-TOKEN"
+
 envconst = Envconst()

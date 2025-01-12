@@ -1,0 +1,5 @@
+12-01-2025 at 18:07:01 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 3, 'emp_name': 'Atul', 'email': 'atul@yeyeqeryqreqer.com', 'mobile': '123456789', 'status': 1}]}
+12-01-2025 at 18:20:02 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 4, 'emp_name': 'Atul', 'email': 'atul@yeyeqeryqreqe.com', 'mobile': '123456789', 'status': 1}]}
+12-01-2025 at 18:32:13 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 5, 'emp_name': 'Atul', 'email': 'atul@comsysapp.com', 'mobile': '000000', 'status': 1}]}
+12-01-2025 at 19:44:24 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 6, 'emp_name': 'Atul', 'email': 'atulff@comsysapp.com', 'mobile': '000000', 'status': 1}]}
+12-01-2025 at 19:49:01 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 7, 'emp_name': 'Atul', 'email': 'atulfff@comsysapp.com', 'mobile': '000000', 'status': 1}]}
