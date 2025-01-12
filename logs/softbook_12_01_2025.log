@@ -3,3 +3,16 @@
 12-01-2025 at 18:32:13 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 5, 'emp_name': 'Atul', 'email': 'atul@comsysapp.com', 'mobile': '000000', 'status': 1}]}
 12-01-2025 at 19:44:24 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 6, 'emp_name': 'Atul', 'email': 'atulff@comsysapp.com', 'mobile': '000000', 'status': 1}]}
 12-01-2025 at 19:49:01 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 7, 'emp_name': 'Atul', 'email': 'atulfff@comsysapp.com', 'mobile': '000000', 'status': 1}]}
+12-01-2025 at 21:46:03 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'NameError'>, Message:name 'authenticate' is not defined"}
+12-01-2025 at 21:46:33 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'NameError'>, Message:name 'authenticate' is not defined"}
+12-01-2025 at 21:52:02 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'NameError'>, Message:name 'HashData' is not defined"}
+12-01-2025 at 21:52:37 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'NameError'>, Message:name 'HashData' is not defined"}
+12-01-2025 at 21:52:44 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'NameError'>, Message:name 'HashData' is not defined"}
+12-01-2025 at 22:00:01 | DEBUG | RESPONSE:{'status_code': 200, 'status': True, 'message': 'Emp m successfully created', 'data': [{'id': 8, 'emp_name': 'Atul', 'email': 'atul@yopmail.com', 'mobile': '123456789', 'status': 1}]}
+12-01-2025 at 22:00:28 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'AttributeError'>, Message:hashed_password"}
+12-01-2025 at 22:00:35 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'AttributeError'>, Message:hashed_password"}
+12-01-2025 at 23:03:49 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'AttributeError'>, Message:password"}
+12-01-2025 at 23:05:23 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'AttributeError'>, Message:password"}
+12-01-2025 at 23:06:36 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'AttributeError'>, Message:password"}
+12-01-2025 at 23:23:05 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'AttributeError'>, Message:password"}
+12-01-2025 at 23:24:09 | DEBUG | RESPONSE:{'status_code': 422, 'status': False, 'message': "Type:<class 'AttributeError'>, Message:password"}

@@ -43,3 +43,10 @@ class EmpmMessage:
 
 empm_message = EmpmMessage()
 
+class AuthMessage:
+    EMAIL_NOT_EXIST: str = "Email not found"
+    INCORRECT_CREDENTIALS: str = "Credential incorrect"
+    STATUS_INACTIVE: str = "Inactive employee"
+    AUTH_SUCCESSFULL: str = "Login successfull"
+
+auth_message = AuthMessage()

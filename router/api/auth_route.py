@@ -3,48 +3,59 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi import APIRouter
 from passlib.context import CryptContext
-
-
+from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, HTTPException, status
-from validation.auth import Token, TokenData, TokenCredentialIn,TokenOut, Logout
+from validation.auth import AuthCredentialIn,AuthOut, Logout
 from fastapi.responses import JSONResponse, ORJSONResponse
 from database.session import get_db
-from core.auth import authenticate_user, get_current_active_user
+from config.logconfig import loglogger
+from core.auth import authenticate
+from core.token import create_access_token
+from config.loadenv import envconst
+from config.message import auth_message
 
 router = APIRouter()
 
-@router.post("/login",response_model=TokenOut, response_class=JSONResponse,name="login")
-async def login_for_access_token(credentials: TokenCredentialIn,db:Session = Depends(get_db)):
-    user = authenticate_user(credentials.email, credentials.password,db)
-    if not user:
-        raise CustomException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            status=constants.STATUS_UNAUTHORIZED,
-            message=message.INCORRECT_CREDENTIALS,
-            data=[]
-        )
-    elif(user.is_active == False):
-        raise CustomException(status_code=status.HTTP_403_FORBIDDEN,status=constants.STATUS_FORBIDDEN,message=message.INACTIVE_USER,data=[])  
-
-    access_token_expires = timedelta(minutes=int(settings.ACCESS_TOKEN_EXPIRE_MINUTES))
-    access_token = create_access_token(
-        data={"email": user.email}, expires_delta=access_token_expires
+@router.post(
+    "/login",
+    name="login"
     )
-    http_status_code: int = status.HTTP_200_OK
-    user_data = {
-        "status_code": http_status_code,
-        "status":constants.STATUS_OK,
-        "access_token":access_token,
-        "token_type":settings.TOKEN_TYPE,
-        "first_name": user.first_name,
-        "email": user.email,
-        "role": user.role,
-        "country":user.country,
-        "state":user.state,
-        "city":user.city,
-        "address":user.address,
-        "zeep_code":user.zeep_code
-    }
-    response_data = TokenOut(**user_data)
-    response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
-    return response
+async def login(credentials:AuthCredentialIn,response_model=AuthOut, db:Session = Depends(get_db)):
+    AuthCredentialIn.check_email_exist(db,credentials.email)
+    authemp = authenticate(credentials.email, credentials.password, db)
+    try:
+        access_token_expires = timedelta(minutes=int(envconst.ACCESS_TOKEN_EXPIRE_MINUTES))
+        access_token = create_access_token(
+        data={"email": authemp.email}, expires_delta=access_token_expires
+    )
+        http_status_code = status.HTTP_200_OK
+        datalist = list()
+        
+        datadict = {}
+        datadict['id'] = authemp.id
+        datadict['emp_name'] = authemp.emp_name
+        datadict['email'] = authemp.email
+        datadict['status'] = authemp.status
+        datadict['mobile'] = authemp.mobile
+        datalist.append(datadict)
+        response_dict = {
+            "status_code": http_status_code,
+            "status":True,
+            "message":auth_message.AUTH_SUCCESSFULL,
+            "data":datalist
+        }
+        response_data = AuthOut(**response_dict) 
+        response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
+        return response
+
+    except Exception as e:
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":"Type:"+str(type(e))+", Message:"+str(e)
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
+        return response

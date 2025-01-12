@@ -805,3 +805,10 @@ def get_data_by_email(db,email):
         return response
 
 ```
+
+
+## Get jwt token after authentication
+
+
+## About timedelta
+Reference: https://www.geeksforgeeks.org/python-datetime-timedelta-function/
