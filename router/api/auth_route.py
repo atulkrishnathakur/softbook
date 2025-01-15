@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from fastapi import Depends, FastAPI, HTTPException, status
-from validation.auth import AuthCredentialIn,AuthOut, Logout
+from validation.auth import (AuthCredentialIn,AuthOut, Logout,Status422Response,Status400Response,Status401Response)
 from fastapi.responses import JSONResponse, ORJSONResponse
 from database.session import get_db
 from config.logconfig import loglogger
@@ -18,9 +18,15 @@ router = APIRouter()
 
 @router.post(
     "/login",
+    response_model=AuthOut,
+    responses={
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response},
+        status.HTTP_400_BAD_REQUEST: {"model": Status400Response},
+        status.HTTP_401_UNAUTHORIZED: {"model": Status401Response}
+    },
     name="login"
     )
-async def login(credentials:AuthCredentialIn,response_model=AuthOut, db:Session = Depends(get_db)):
+async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
     AuthCredentialIn.check_email_exist(db,credentials.email)
     authemp = authenticate(credentials.email, credentials.password, db)
     try:
@@ -28,6 +34,7 @@ async def login(credentials:AuthCredentialIn,response_model=AuthOut, db:Session 
         access_token = create_access_token(
         data={"email": authemp.email}, expires_delta=access_token_expires
     )
+
         http_status_code = status.HTTP_200_OK
         datalist = list()
         
@@ -42,13 +49,14 @@ async def login(credentials:AuthCredentialIn,response_model=AuthOut, db:Session 
             "status_code": http_status_code,
             "status":True,
             "message":auth_message.AUTH_SUCCESSFULL,
+            "token_type":envconst.TOKEN_TYPE,
+            "access_token":access_token,
             "data":datalist
         }
         response_data = AuthOut(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         loglogger.debug("RESPONSE:"+str(response_data.dict()))
         return response
-
     except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {

@@ -578,6 +578,16 @@ SECRET_KEY=a9e53f2c3db459d04f147f11a056a705f87fbbba6204a42efb9a37b4aed9cf48
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 ```
+## about bcrypt error
+- bcrypt 4.2.1 version gives error in passlib
+```
+AttributeError: module 'bcrypt' has no attribute '__about__'
+```
+
+- again install bcrypt 4.0.1 version for the solution
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install bcrypt==4.0.1
+```
 
 ## Registration for authentication
 - create the `router/api/emp_route.py` file for route
@@ -805,7 +815,6 @@ def get_data_by_email(db,email):
         return response
 
 ```
-
 
 ## Get jwt token after authentication
 

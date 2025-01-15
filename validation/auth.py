@@ -58,5 +58,22 @@ class AuthOut(BaseModel):
 class Logout(BaseModel):
     message: str | None = None
     status: bool | None = None
-    status_code: int | None = None 
-    
+    status_code: int | None = None
+
+class Status422Response(BaseModel):
+    status_code:int = Field(default=422)
+    status:bool = Field(default=False)
+    message:str | None = "Not Processable data"
+    data:list | None = []
+
+class Status400Response(BaseModel):
+    status_code:int = Field(default=400)
+    status:bool = Field(default=False)
+    message:str | None = "Bad request"
+    data:list | None = []
+
+class Status401Response(BaseModel):
+    status_code:int = Field(default=401)
+    status:bool = Field(default=False)
+    message:str | None = "Unauthorized"
+    data:list | None = []
