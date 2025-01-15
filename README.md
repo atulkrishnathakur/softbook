@@ -18,7 +18,7 @@ atul@atul-Lenovo-G570:~/softbook$ git init
 ```
 2. set the user name in git
 ```
-atul@atul-Lenovo-G570:~/softbook$ git config user.name "Atul Krishna Thakur"
+atul@atul-Lenovo-G570:~/softbook$ git config user.name "abcd"
 ```
  
 3. check the user name in git
@@ -30,7 +30,7 @@ atul@atul-Lenovo-G570:~/softbook$ git config user.name
 4. set the user email in git
  
 ```
-atul@atul-Lenovo-G570:~/softbook$ git config user.email "gitvcs@gmail.com"
+atul@atul-Lenovo-G570:~/softbook$ git config user.email "****@***.com"
 ```
 5. check the user email in git
  
