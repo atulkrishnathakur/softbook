@@ -48,5 +48,6 @@ class AuthMessage:
     INCORRECT_CREDENTIALS: str = "Credential incorrect"
     STATUS_INACTIVE: str = "Inactive employee"
     AUTH_SUCCESSFULL: str = "Login successfull"
+    LOGIN_REQUIRED: str = "You have need to login first"
 
 auth_message = AuthMessage()

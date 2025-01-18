@@ -5,17 +5,27 @@ from database.session import get_db
 from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
 from fastapi.encoders import jsonable_encoder
 from validation.cs_g_m import CsgmSave,CsgmResponse,CsgmUpdate,id_checker,Status422Response
+from validation.emp_m import EmpSchemaOut
 from fastapi.responses import JSONResponse, ORJSONResponse
 from database.model_functions.cs_grp_m import (save_new_cs_group,get_all_data,get_all_active_data,get_data_by_id,update_by_id,soft_delete)
 from exception.custom_exception import CustomException
 from pydantic import (BaseModel,Field, model_validator, EmailStr, ModelWrapValidatorHandler, ValidationError, AfterValidator,BeforeValidator,PlainValidator, ValidatorFunctionWrapHandler)
 from config.message import csgrpmessage
 from config.logconfig import loglogger
+from core.auth import getCurrentActiveEmp
 
 router = APIRouter()
 
-@router.post("/cs-g-m-save", response_model=CsgmResponse, name="csgmsave")
-def csgmSave(csgm: CsgmSave, db:Session = Depends(get_db)):
+@router.post(
+    "/cs-g-m-save",
+    response_model=CsgmResponse,
+    name="csgmsave"
+    )
+def csgmSave(
+    current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
+    csgm: CsgmSave,
+    db:Session = Depends(get_db)
+    ):
     try:
         insertedData = save_new_cs_group(db=db, csgm=csgm)
         http_status_code = status.HTTP_200_OK
@@ -51,8 +61,18 @@ def csgmSave(csgm: CsgmSave, db:Session = Depends(get_db)):
         loglogger.debug("RESPONSE:"+str(data))
         return response
 
-@router.get("/cs-g-m-list", response_model=CsgmResponse,responses={status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response}}, name="csgmlist")
-def getCsgmList(db:Session = Depends(get_db)):
+@router.get(
+    "/cs-g-m-list",
+    response_model=CsgmResponse,
+    responses={
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response}
+        },
+        name="csgmlist"
+        )
+def getCsgmList(
+    current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
+    db:Session = Depends(get_db)
+    ):
     try:
         allDbData = get_all_data(db=db)
         http_status_code = status.HTTP_200_OK
@@ -86,8 +106,15 @@ def getCsgmList(db:Session = Depends(get_db)):
         loglogger.debug("RESPONSE:"+str(data))
         return response
 
-@router.get("/cs-g-m-active-list", response_model=CsgmResponse, name="csgmactivelist")
-def getCsgmList(db:Session = Depends(get_db)):
+@router.get(
+    "/cs-g-m-active-list",
+    response_model=CsgmResponse,
+    name="csgmactivelist"
+    )
+def getCsgmList(
+    current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
+    db:Session = Depends(get_db)
+    ):
     try:
         allDbData = get_all_active_data(db=db)
         http_status_code = status.HTTP_200_OK
@@ -123,6 +150,7 @@ def getCsgmList(db:Session = Depends(get_db)):
 
 @router.post("/cs-g-m-update/{id}", response_model=CsgmResponse, name="csgmupdate")
 def csgmUpdate(
+    current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
     csgm: CsgmUpdate,
     id:int = Depends(id_checker),
     db:Session = Depends(get_db)
@@ -163,6 +191,7 @@ def csgmUpdate(
 
 @router.post("/cs-g-m-soft-delete/{id}", response_model=CsgmResponse, name="csgmsoftdelete")
 def csgmDelete(
+    current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
     id:int = Depends(id_checker),
     db:Session = Depends(get_db)
     ):

@@ -54,6 +54,7 @@ class EmpSchemaIn(BaseEmpSchema):
             )
         return self
 
+'''
 def dataResponseStatusChecker(value: int)-> int:
     # https://docs.pydantic.dev/latest/concepts/validators/
     if value != 0 and value != 1:
@@ -64,19 +65,20 @@ def dataResponseStatusChecker(value: int)-> int:
             data=[]
         )    
     return value
+'''   
 
 class EmpDataResponse(BaseModel):
     id: int = Field(example=1)
     emp_name: str = Field(example="abcd")
     email: EmailStr = Field(example="atul@comsysapp.com") 
     mobile: str | None = Field(example="000000")
-    status: Annotated[int, Field(example=1), PlainValidator(dataResponseStatusChecker)]
+    status: int = Field(example=1)
 
 class EmpSchemaOut(BaseModel):
     status_code:int = Field(example=1)
     status:bool = Field(example=True)
     message:str | None = None
-    data: list[EmpDataResponse] | None = None
+    data: list[EmpDataResponse] | None = []
 
 class EmpInDB(BaseEmpSchema):
     hashed_password: str

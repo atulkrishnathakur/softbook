@@ -8,6 +8,11 @@ from exception.custom_exception import CustomException
 from fastapi import HTTPException, Response, Request
 from core.hashing import HashData
 from config.message import auth_message
+from core.apikeyheader import get_api_key
+from core.token import blacklist
+from validation.emp_m import EmpSchemaOut
+from validation.auth import TokenData
+from config.loadenv import envconst
 
 def authenticate(email,password,db):
     dbempm = get_emp_for_login(db,email)
@@ -28,22 +33,30 @@ def authenticate(email,password,db):
         )   
     return dbempm
 
-'''
-async def get_current_user(token: Annotated[str, Depends(get_api_key)], db: Annotated[Session, Depends(get_db)]):
-    logger.debug('get current user function')
+async def getCurrentEmp(token: Annotated[str, Depends(get_api_key)], db: Annotated[Session, Depends(get_db)]):
     if token in blacklist:
-        http_status_code = status.HTTP_401_UNAUTHORIZED 
+        raise CustomException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            status=False,
+            message=auth_message.LOGIN_REQUIRED,
+            data=[]
+        )
     else:    
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, envconst.SECRET_KEY, algorithms=[envconst.ALGORITHM])
         email: str = payload.get("email")
         token_data = TokenData(email=email)
-        user = get_user(db, email=token_data.email)
-        return user
+        currentEmp = get_emp_for_login(db, email=token_data.email)
+        return currentEmp
 
-async def get_current_active_user(
-    current_user: Annotated[UserSchemaOut, Depends(get_current_user)],
+
+async def getCurrentActiveEmp(
+    currentEmp: Annotated[EmpSchemaOut, Depends(getCurrentEmp)],
 ):
-    return current_user
-
-
-'''
+    if(currentEmp.status == 0):
+        raise CustomException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            status=False,
+            message=auth_message.LOGIN_REQUIRED,
+            data=[]
+        )
+    return currentEmp

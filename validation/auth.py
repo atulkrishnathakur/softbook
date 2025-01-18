@@ -77,3 +77,6 @@ class Status401Response(BaseModel):
     status:bool = Field(default=False)
     message:str | None = "Unauthorized"
     data:list | None = []
+
+class TokenData(BaseModel):
+    email: str | None = None

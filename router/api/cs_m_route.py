@@ -5,17 +5,19 @@ from database.session import get_db
 from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
 from fastapi.encoders import jsonable_encoder
 from validation.cs_m import CsmSave,CsmResponse,CsmUpdate,id_checker
+from validation.emp_m import EmpSchemaOut
 from fastapi.responses import JSONResponse, ORJSONResponse
 from database.model_functions.cs_m import (save_new_cs,get_all_data,get_all_active_data,get_data_by_id,update_by_id,soft_delete)
 from exception.custom_exception import CustomException
 from pydantic import (BaseModel,Field, model_validator, EmailStr, ModelWrapValidatorHandler, ValidationError, AfterValidator,BeforeValidator,PlainValidator, ValidatorFunctionWrapHandler)
 from config.message import csmmessage
 from config.logconfig import loglogger
+from core.auth import getCurrentActiveEmp
 
 router = APIRouter()
 
 @router.post("/csm-save", response_model=CsmResponse, name="csmsave")
-def csmSave(csm: CsmSave, db:Session = Depends(get_db)):
+def csmSave(current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],csm: CsmSave, db:Session = Depends(get_db)):
     # I keep cs_grpm_id_check_db function outside of try block because cs_grpm_id_check_db function raise an exception. If cs_grpm_id_check_db keep inside function then Exception class will except it because Exception is parrent class.
     # Main point is raise keyword use the outside of try block.
     CsmSave.cs_grpm_id_check_db(db,csm.cs_grp_m_id)

@@ -26,6 +26,7 @@ router = APIRouter()
     },
     name="login"
     )
+
 async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
     AuthCredentialIn.check_email_exist(db,credentials.email)
     authemp = authenticate(credentials.email, credentials.password, db)
@@ -37,7 +38,6 @@ async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
 
         http_status_code = status.HTTP_200_OK
         datalist = list()
-        
         datadict = {}
         datadict['id'] = authemp.id
         datadict['emp_name'] = authemp.emp_name
