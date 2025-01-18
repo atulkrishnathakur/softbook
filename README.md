@@ -817,7 +817,233 @@ def get_data_by_email(db,email):
 ```
 
 ## Get jwt token after authentication
+- create the `api/auth_route.py` file for authentication 
 
+```
+from datetime import datetime, timedelta, timezone
+from typing import Annotated
+from fastapi import Depends, FastAPI, HTTPException, status, Request
+from fastapi import APIRouter
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+from fastapi import Depends, FastAPI, HTTPException, status
+from validation.auth import (AuthCredentialIn,AuthOut, Logout,Status422Response,Status400Response,Status401Response)
+from fastapi.responses import JSONResponse, ORJSONResponse
+from database.session import get_db
+from config.logconfig import loglogger
+from core.auth import authenticate
+from core.token import create_access_token
+from config.loadenv import envconst
+from config.message import auth_message
+
+router = APIRouter()
+
+@router.post(
+    "/login",
+    response_model=AuthOut,
+    responses={
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response},
+        status.HTTP_400_BAD_REQUEST: {"model": Status400Response},
+        status.HTTP_401_UNAUTHORIZED: {"model": Status401Response}
+    },
+    name="login"
+    )
+
+async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
+    AuthCredentialIn.check_email_exist(db,credentials.email)
+    authemp = authenticate(credentials.email, credentials.password, db)
+    try:
+        access_token_expires = timedelta(minutes=int(envconst.ACCESS_TOKEN_EXPIRE_MINUTES))
+        access_token = create_access_token(
+        data={"email": authemp.email}, expires_delta=access_token_expires
+    )
+
+        http_status_code = status.HTTP_200_OK
+        datalist = list()
+        datadict = {}
+        datadict['id'] = authemp.id
+        datadict['emp_name'] = authemp.emp_name
+        datadict['email'] = authemp.email
+        datadict['status'] = authemp.status
+        datadict['mobile'] = authemp.mobile
+        datalist.append(datadict)
+        response_dict = {
+            "status_code": http_status_code,
+            "status":True,
+            "message":auth_message.AUTH_SUCCESSFULL,
+            "token_type":envconst.TOKEN_TYPE,
+            "access_token":access_token,
+            "data":datalist
+        }
+        response_data = AuthOut(**response_dict) 
+        response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
+        return response
+    except Exception as e:
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":"Type:"+str(type(e))+", Message:"+str(e)
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
+        return response
+```
+- Create the `core/apikeyheader.py` file 
+- In APIKeyHeader class name variable hold the header key. This header sent from client to server. This key send jwt token.
+- Reference: https://fastapi.tiangolo.com/tutorial/header-params/#declare-header-parameters 
+
+```
+from fastapi.security import APIKeyHeader
+from fastapi import Security
+from passlib.context import CryptContext
+from config.logconfig import loglogger
+from config.loadenv import envconst
+from fastapi import Depends, status
+from config.message import auth_message
+from exception.custom_exception import CustomException
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+#oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") 
+# https://fastapi.tiangolo.com/tutorial/header-params/#declare-header-parameters
+
+header_scheme = APIKeyHeader(name=envconst.API_KEY_HEADER_NAME)
+
+async def get_api_key(api_key: str = Security(header_scheme)):
+    if not api_key:
+        raise CustomException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            status=False,
+            message=auth_message.INCORRECT_CREDENTIALS,
+            data=[]
+        )
+    return api_key
+```
+
+- Create the `core/auth.py` file
+```
+from typing import Annotated
+from fastapi import Depends, status
+import jwt
+from sqlalchemy.orm import Session
+from database.session import get_db
+from database.model_functions.login import get_emp_for_login
+from exception.custom_exception import CustomException
+from fastapi import HTTPException, Response, Request
+from core.hashing import HashData
+from config.message import auth_message
+from core.apikeyheader import get_api_key
+from core.token import blacklist
+from validation.emp_m import EmpSchemaOut
+from validation.auth import TokenData
+from config.loadenv import envconst
+
+def authenticate(email,password,db):
+    dbempm = get_emp_for_login(db,email)
+    if not dbempm:
+        raise CustomException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            status=False,
+            message=auth_message.INCORRECT_CREDENTIALS,
+            data=[]
+        )
+        
+    if not HashData.verify_password(password, dbempm.password):
+        raise CustomException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            status=False,
+            message=auth_message.INCORRECT_CREDENTIALS,
+            data=[]
+        )   
+    return dbempm
+
+async def getCurrentEmp(token: Annotated[str, Depends(get_api_key)], db: Annotated[Session, Depends(get_db)]):
+    if token in blacklist:
+        raise CustomException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            status=False,
+            message=auth_message.LOGIN_REQUIRED,
+            data=[]
+        )
+    else:    
+        payload = jwt.decode(token, envconst.SECRET_KEY, algorithms=[envconst.ALGORITHM])
+        email: str = payload.get("email")
+        token_data = TokenData(email=email)
+        currentEmp = get_emp_for_login(db, email=token_data.email)
+        return currentEmp
+
+
+async def getCurrentActiveEmp(
+    currentEmp: Annotated[EmpSchemaOut, Depends(getCurrentEmp)],
+):
+    if(currentEmp.status == 0):
+        raise CustomException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            status=False,
+            message=auth_message.LOGIN_REQUIRED,
+            data=[]
+        )
+    return currentEmp
+```
+
+## Create custom middleware to check the Authentication. If without login an api call then this middleware will protect the endpoint.
+- create the `middlewares/authcheckermiddleware.py` for the custom middleware.
+- Reference: https://fastapi.tiangolo.com/tutorial/middleware/ 
+
+```
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import Request
+from fastapi.responses import JSONResponse, ORJSONResponse, HTMLResponse
+from fastapi import Depends, status, HTTPException, Request, Header
+from router.router_base import api_router
+from exception.custom_exception import CustomException
+from config.message import auth_message
+
+# https://fastapi.tiangolo.com/tutorial/middleware/
+
+class AuthCheckerMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, some_attribute: str):
+        super().__init__(app)
+        self.some_attribute = some_attribute
+    # url_path_for("route name here")
+    async def dispatch(self, request: Request, call_next):
+        excluded_paths = [
+            "/softbook-docs",
+            "/api/softbook.json",
+            "/api"+api_router.url_path_for("login"),
+            "/api"+api_router.url_path_for("test")
+            ]
+        if request.url.path not in excluded_paths and not request.headers.get("ACCESS-TOKEN"):
+            return JSONResponse(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                content={
+                    "status_code":status.HTTP_401_UNAUTHORIZED,
+                    "status":"/api/"+api_router.url_path_for("login"),
+                    "message":auth_message.LOGIN_REQUIRED,
+                    "data":[]
+                    },
+            )
+        response = await call_next(request)
+        return response
+```
+
+## How to protect the route(endpoint) so without login an API is not call
+- Use the `current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)]` as a function to protect endpoint for authentication.
+
+```
+.............................................
+.............................................
+
+router = APIRouter()
+
+@router.post("/csm-save", response_model=CsmResponse, name="csmsave")
+def csmSave(current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],csm: CsmSave, db:Session = Depends(get_db)):
+
+..............................................
+..............................................
+```
 
 ## About timedelta
 Reference: https://www.geeksforgeeks.org/python-datetime-timedelta-function/
