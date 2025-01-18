@@ -890,12 +890,14 @@ async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
         loglogger.debug("RESPONSE:"+str(data))
         return response
 ```
-- Create the `core/apikeyheader.py` file 
-- In APIKeyHeader class name variable hold the header key. This header sent from client to server. This key send jwt token.
+- Create the `core/httpbearer.py` file 
 - Reference: https://fastapi.tiangolo.com/tutorial/header-params/#declare-header-parameters 
+- In postman API testing tool
+ - Select Authorization
+ - In Type select Bearer Token
+ - In Token input box enter the jwt token
 
 ```
-from fastapi.security import APIKeyHeader
 from fastapi import Security
 from passlib.context import CryptContext
 from config.logconfig import loglogger
@@ -903,15 +905,15 @@ from config.loadenv import envconst
 from fastapi import Depends, status
 from config.message import auth_message
 from exception.custom_exception import CustomException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Annotated
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-#oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") 
-# https://fastapi.tiangolo.com/tutorial/header-params/#declare-header-parameters
+http_bearer = HTTPBearer() 
 
-header_scheme = APIKeyHeader(name=envconst.API_KEY_HEADER_NAME)
-
-async def get_api_key(api_key: str = Security(header_scheme)):
+async def get_api_token(credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)]):
+    api_key = credentials.credentials
     if not api_key:
         raise CustomException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -934,11 +936,11 @@ from exception.custom_exception import CustomException
 from fastapi import HTTPException, Response, Request
 from core.hashing import HashData
 from config.message import auth_message
-from core.apikeyheader import get_api_key
 from core.token import blacklist
 from validation.emp_m import EmpSchemaOut
 from validation.auth import TokenData
 from config.loadenv import envconst
+from core.httpbearer import get_api_token
 
 def authenticate(email,password,db):
     dbempm = get_emp_for_login(db,email)
@@ -959,7 +961,7 @@ def authenticate(email,password,db):
         )   
     return dbempm
 
-async def getCurrentEmp(token: Annotated[str, Depends(get_api_key)], db: Annotated[Session, Depends(get_db)]):
+async def getCurrentEmp(token: Annotated[str, Depends(get_api_token)], db: Annotated[Session, Depends(get_db)]):
     if token in blacklist:
         raise CustomException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -967,13 +969,12 @@ async def getCurrentEmp(token: Annotated[str, Depends(get_api_key)], db: Annotat
             message=auth_message.LOGIN_REQUIRED,
             data=[]
         )
-    else:    
+    else:
         payload = jwt.decode(token, envconst.SECRET_KEY, algorithms=[envconst.ALGORITHM])
         email: str = payload.get("email")
         token_data = TokenData(email=email)
         currentEmp = get_emp_for_login(db, email=token_data.email)
         return currentEmp
-
 
 async def getCurrentActiveEmp(
     currentEmp: Annotated[EmpSchemaOut, Depends(getCurrentEmp)],
@@ -1009,18 +1010,19 @@ class AuthCheckerMiddleware(BaseHTTPMiddleware):
         self.some_attribute = some_attribute
     # url_path_for("route name here")
     async def dispatch(self, request: Request, call_next):
+        token = request.headers.get("Authorization")
         excluded_paths = [
             "/softbook-docs",
             "/api/softbook.json",
             "/api"+api_router.url_path_for("login"),
             "/api"+api_router.url_path_for("test")
             ]
-        if request.url.path not in excluded_paths and not request.headers.get("ACCESS-TOKEN"):
+        if request.url.path not in excluded_paths and (token is None or not token.startswith("Bearer ")) :
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={
                     "status_code":status.HTTP_401_UNAUTHORIZED,
-                    "status":"/api/"+api_router.url_path_for("login"),
+                    "status":False,
                     "message":auth_message.LOGIN_REQUIRED,
                     "data":[]
                     },

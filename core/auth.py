@@ -8,11 +8,11 @@ from exception.custom_exception import CustomException
 from fastapi import HTTPException, Response, Request
 from core.hashing import HashData
 from config.message import auth_message
-from core.apikeyheader import get_api_key
 from core.token import blacklist
 from validation.emp_m import EmpSchemaOut
 from validation.auth import TokenData
 from config.loadenv import envconst
+from core.httpbearer import get_api_token
 
 def authenticate(email,password,db):
     dbempm = get_emp_for_login(db,email)
@@ -33,7 +33,7 @@ def authenticate(email,password,db):
         )   
     return dbempm
 
-async def getCurrentEmp(token: Annotated[str, Depends(get_api_key)], db: Annotated[Session, Depends(get_db)]):
+async def getCurrentEmp(token: Annotated[str, Depends(get_api_token)], db: Annotated[Session, Depends(get_db)]):
     if token in blacklist:
         raise CustomException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -41,13 +41,12 @@ async def getCurrentEmp(token: Annotated[str, Depends(get_api_key)], db: Annotat
             message=auth_message.LOGIN_REQUIRED,
             data=[]
         )
-    else:    
+    else:
         payload = jwt.decode(token, envconst.SECRET_KEY, algorithms=[envconst.ALGORITHM])
         email: str = payload.get("email")
         token_data = TokenData(email=email)
         currentEmp = get_emp_for_login(db, email=token_data.email)
         return currentEmp
-
 
 async def getCurrentActiveEmp(
     currentEmp: Annotated[EmpSchemaOut, Depends(getCurrentEmp)],

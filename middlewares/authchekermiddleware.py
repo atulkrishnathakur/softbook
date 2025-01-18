@@ -14,18 +14,19 @@ class AuthCheckerMiddleware(BaseHTTPMiddleware):
         self.some_attribute = some_attribute
     # url_path_for("route name here")
     async def dispatch(self, request: Request, call_next):
+        token = request.headers.get("Authorization")
         excluded_paths = [
             "/softbook-docs",
             "/api/softbook.json",
             "/api"+api_router.url_path_for("login"),
             "/api"+api_router.url_path_for("test")
             ]
-        if request.url.path not in excluded_paths and not request.headers.get("ACCESS-TOKEN"):
+        if request.url.path not in excluded_paths and (token is None or not token.startswith("Bearer ")) :
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={
                     "status_code":status.HTTP_401_UNAUTHORIZED,
-                    "status":"/api/"+api_router.url_path_for("login"),
+                    "status":False,
                     "message":auth_message.LOGIN_REQUIRED,
                     "data":[]
                     },
