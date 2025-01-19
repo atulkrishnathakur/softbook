@@ -1,5 +1,4 @@
 from fastapi import Security
-from passlib.context import CryptContext
 from config.logconfig import loglogger
 from config.loadenv import envconst
 from fastapi import Depends, status
@@ -8,10 +7,9 @@ from exception.custom_exception import CustomException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# https://fastapi.tiangolo.com/reference/security/#fastapi.security.HTTPBearer
 
 http_bearer = HTTPBearer() 
-
 async def get_api_token(credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)]):
     api_key = credentials.credentials
     if not api_key:

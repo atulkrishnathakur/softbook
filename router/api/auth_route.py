@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-from fastapi import Depends, FastAPI, HTTPException, status, Request
+from fastapi import Depends, FastAPI, status, Request
 from fastapi import APIRouter
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from fastapi import Depends, FastAPI, HTTPException, status
 from validation.auth import (AuthCredentialIn,AuthOut, Logout,Status422Response,Status400Response,Status401Response)
 from fastapi.responses import JSONResponse, ORJSONResponse
 from database.session import get_db
@@ -35,7 +33,6 @@ async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
         access_token = create_access_token(
         data={"email": authemp.email}, expires_delta=access_token_expires
     )
-
         http_status_code = status.HTTP_200_OK
         datalist = list()
         datadict = {}

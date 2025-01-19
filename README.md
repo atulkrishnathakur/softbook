@@ -822,11 +822,9 @@ def get_data_by_email(db,email):
 ```
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-from fastapi import Depends, FastAPI, HTTPException, status, Request
+from fastapi import Depends, FastAPI, status, Request
 from fastapi import APIRouter
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from fastapi import Depends, FastAPI, HTTPException, status
 from validation.auth import (AuthCredentialIn,AuthOut, Logout,Status422Response,Status400Response,Status401Response)
 from fastapi.responses import JSONResponse, ORJSONResponse
 from database.session import get_db
@@ -857,7 +855,6 @@ async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
         access_token = create_access_token(
         data={"email": authemp.email}, expires_delta=access_token_expires
     )
-
         http_status_code = status.HTTP_200_OK
         datalist = list()
         datadict = {}
@@ -889,8 +886,10 @@ async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
         response = JSONResponse(content=data,status_code=http_status_code)
         loglogger.debug("RESPONSE:"+str(data))
         return response
+
 ```
 - Create the `core/httpbearer.py` file 
+- Reference: https://fastapi.tiangolo.com/reference/security/#fastapi.security.HTTPBearer 
 - Reference: https://fastapi.tiangolo.com/tutorial/header-params/#declare-header-parameters 
 - In postman API testing tool
  - Select Authorization
@@ -899,7 +898,6 @@ async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
 
 ```
 from fastapi import Security
-from passlib.context import CryptContext
 from config.logconfig import loglogger
 from config.loadenv import envconst
 from fastapi import Depends, status
@@ -908,10 +906,9 @@ from exception.custom_exception import CustomException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Annotated
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# https://fastapi.tiangolo.com/reference/security/#fastapi.security.HTTPBearer
 
 http_bearer = HTTPBearer() 
-
 async def get_api_token(credentials: Annotated[HTTPAuthorizationCredentials, Depends(http_bearer)]):
     api_key = credentials.credentials
     if not api_key:
@@ -922,6 +919,7 @@ async def get_api_token(credentials: Annotated[HTTPAuthorizationCredentials, Dep
             data=[]
         )
     return api_key
+
 ```
 
 - Create the `core/auth.py` file
@@ -1045,6 +1043,7 @@ def csmSave(current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
 
 ..............................................
 ..............................................
+
 ```
 
 ## About timedelta

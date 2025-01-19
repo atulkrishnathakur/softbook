@@ -1,3 +1,4 @@
+'''
 from fastapi.security import APIKeyHeader
 from fastapi import Security
 from passlib.context import CryptContext
@@ -9,7 +10,6 @@ from exception.custom_exception import CustomException
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-#oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token") 
 # https://fastapi.tiangolo.com/tutorial/header-params/#declare-header-parameters
 
 header_scheme = APIKeyHeader(name=envconst.API_KEY_HEADER_NAME)
@@ -23,3 +23,5 @@ async def get_api_key(api_key: str = Security(header_scheme)):
             data=[]
         )
     return api_key
+
+'''
