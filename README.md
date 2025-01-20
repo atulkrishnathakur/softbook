@@ -122,6 +122,19 @@ atul@atul-Lenovo-G570:~/softbook$ source env/bin/activate
 (env) atul@atul-Lenovo-G570:~/softbook$ pip3 --version
 ```
 
+## How to clone
+- Some time project not available in your system then you have need to clone this project from github.com
+- Comman to clone repository
+```
+atul@atul-Lenovo-G570:~$ git clone https://github.com/atulkrishnathakur/softbook.git
+```
+
+- After clone when you want to see branches then only you will see master branch not other branch
+- But you have need to go in other branch then run below command to checkout. Branch name will be same as remote branch name
+```
+atul@atul-Lenovo-G570:~/softbook$ git checkout v3-authentication
+```
+
 ## How to generate requirements.txt in python?
 ```
 (env) atul@atul-Lenovo-G570:~/softbook$ pip3 freeze > requirements.txt
