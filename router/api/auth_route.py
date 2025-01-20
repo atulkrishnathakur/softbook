@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Annotated
-from fastapi import Depends, FastAPI, status, Request
+from fastapi import Depends, FastAPI, status, Request, BackgroundTasks
 from fastapi import APIRouter
 from sqlalchemy.orm import Session
 from validation.auth import (AuthCredentialIn,AuthOut, Logout,Status422Response,Status400Response,Status401Response)
@@ -11,6 +11,9 @@ from core.auth import authenticate
 from core.token import create_access_token
 from config.loadenv import envconst
 from config.message import auth_message
+from validation.email import EmailSchema
+from fastapi_mail import FastMail, MessageSchema, ConnectionConfig,MessageType
+from config.fastapi_mail_config import mailconf
 
 router = APIRouter()
 
@@ -25,7 +28,11 @@ router = APIRouter()
     name="login"
     )
 
-async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
+async def login(
+    background_tasks: BackgroundTasks,
+    credentials:AuthCredentialIn,
+    db:Session = Depends(get_db)
+    ):
     AuthCredentialIn.check_email_exist(db,credentials.email)
     authemp = authenticate(credentials.email, credentials.password, db)
     try:
@@ -53,6 +60,17 @@ async def login(credentials:AuthCredentialIn, db:Session = Depends(get_db)):
         response_data = AuthOut(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         loglogger.debug("RESPONSE:"+str(response_data.dict()))
+
+        html = """<h1>Your have successfully login</h1> """
+
+        message = MessageSchema(
+            subject="Your have successfully login",
+            recipients=[authemp.email],
+            body=html,
+            subtype=MessageType.html)
+
+        fm = FastMail(mailconf)
+        background_tasks.add_task(fm.send_message,message)
         return response
     except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY

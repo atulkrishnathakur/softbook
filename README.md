@@ -1061,3 +1061,10 @@ def csmSave(current_user: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
 
 ## About timedelta
 Reference: https://www.geeksforgeeks.org/python-datetime-timedelta-function/
+
+
+## How to send email
+- install fastapi-mail package
+```
+pip install fastapi-mail
+```
