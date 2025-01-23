@@ -1064,7 +1064,27 @@ Reference: https://www.geeksforgeeks.org/python-datetime-timedelta-function/
 
 
 ## How to send email
+Reference: https://sabuhish.github.io/fastapi-mail/example/
+Reference: https://sabuhish.github.io/fastapi-mail/getting-started/
+
 - install fastapi-mail package
+
 ```
 pip install fastapi-mail
+```
+
+- set constents in env file
+```
+-----------------
+-----------------
+# email
+MAIL_USERNAME=*****@gmail.com
+MAIL_PASSWORD=owwnzewdddwwsmorthm
+MAIL_FROM=atul77.cs@gmail.com
+MAIL_PORT=587
+MAIL_SERVER=smtp.gmail.com
+MAIL_FROM_NAME=softbook
+
+-----------------
+-----------------
 ```
