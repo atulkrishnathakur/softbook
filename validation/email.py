@@ -3,3 +3,5 @@ from typing import List
 
 class EmailSchema(BaseModel):
     email: List[EmailStr]
+    subject: str
+    body: str

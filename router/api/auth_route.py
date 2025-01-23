@@ -13,7 +13,7 @@ from config.loadenv import envconst
 from config.message import auth_message
 from validation.email import EmailSchema
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig,MessageType
-from config.fastapi_mail_config import mailconf
+from config.fastapi_mail_config import send_email, mailconf
 
 router = APIRouter()
 
@@ -61,16 +61,13 @@ async def login(
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         loglogger.debug("RESPONSE:"+str(response_data.dict()))
 
-        html = """<h1>Your have successfully login</h1> """
-
-        message = MessageSchema(
-            subject="Your have successfully login",
-            recipients=[authemp.email],
-            body=html,
-            subtype=MessageType.html)
-
-        fm = FastMail(mailconf)
-        background_tasks.add_task(fm.send_message,message)
+        body = """<h1>Your have successfully Test</h1> """
+        subject = "Your have successfully login"
+        toemail = [authemp.email]
+        ccemail = ['atulcc@yopmail.com']
+        bccemail = ['atulbcc@yopmail.com']
+        emailBody = body
+        send_email(background_tasks=background_tasks,emaiSubject=subject,emailTo=toemail,emailBody=emailBody,ccemail=ccemail,bccemail=bccemail)
         return response
     except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
