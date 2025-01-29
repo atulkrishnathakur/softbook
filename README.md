@@ -1330,3 +1330,82 @@ def empUploadProfile(
         return response
         
 ```
+
+## How to use jinja2 library for templates
+- Reference: https://jinja.palletsprojects.com/en/stable/templates
+- Reference: https://fastapi.tiangolo.com/advanced/templates
+- install jinja2
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install jinja2
+```
+- create the `templates` directory in root directory of project
+- create the `jinja2_config.py` file
+```
+from fastapi.templating import Jinja2Templates
+
+jinjatemplates = Jinja2Templates(directory="templates") 
+```
+- create the `web/web_router_base.py` file
+```
+from fastapi import FastAPI, Request, APIRouter
+from fastapi.responses import HTMLResponse
+from config.jinja2_config import jinjatemplates
+
+router = APIRouter()
+
+@router.get("/web-test", response_class=HTMLResponse)
+async def read_item(request: Request):
+    mname="Atul"
+    return jinjatemplates.TemplateResponse(
+        request=request, name="test.html", context={"mname": mname}
+    )
+```
+- create the `web_router_base.py`
+```
+from fastapi import APIRouter
+from router.web import web_route_test
+
+web_router = APIRouter()
+
+web_router.include_router(web_route_test.router)
+```
+
+- edit the `main.py` file
+
+```
+from fastapi import FastAPI
+from fastapi import FastAPI,Depends, HTTPException, Response, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from router.router_base import api_router
+from router.web_router_base import web_router
+from exception.custom_exception import CustomException,unicorn_exception_handler
+from middlewares.authchekermiddleware import AuthCheckerMiddleware
+from config.static_mount import mount_uploaded_files
+
+def include_router(app):
+    app.include_router(api_router)
+    app.include_router(web_router)
+
+def start_application():
+    app = FastAPI(
+        DEBUG=True,
+        title="softbook",
+        summary="This is a fastapi project",
+        description="This is fastapi project with sqlalchemy",
+        version="1.0.0",
+        openapi_url="/softbook.json",
+        docs_url="/softbook-docs",
+        redoc_url="/softbook-redoc",
+        root_path="/api",
+        root_path_in_servers=True,
+        )
+    include_router(app)
+    mount_uploaded_files(app)
+    return app
+
+app = start_application()
+app.add_exception_handler(CustomException,unicorn_exception_handler)
+#app.add_middleware(AuthCheckerMiddleware, some_attribute="example_attribute")
+
+```

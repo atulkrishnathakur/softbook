@@ -13,7 +13,7 @@ from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
 
-@router.get("/test",name="test")
+@router.get("/apitest",name="apitest")
 def testf(db:Session = Depends(get_db)):
     try:
         return "hello"
