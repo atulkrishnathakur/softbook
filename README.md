@@ -1278,3 +1278,55 @@ app = start_application()
 app.add_exception_handler(CustomException,unicorn_exception_handler)
 app.add_middleware(AuthCheckerMiddleware, some_attribute="example_attribute")
 ```
+- `emp_route.py` file to upload file
+
+```
+............................
+............................
+
+def empUploadProfile(
+    loginEmp: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
+    file: UploadFile,
+    db:Session = Depends(get_db)
+    ):
+    try:
+        loginEmpId = loginEmp.id
+        UPLOAD_DIRECTORY = "./uploads/" # Ensure the directory exists 
+        os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
+        fileNameReq = file.filename
+        splitFileTpl = os.path.splitext(fileNameReq)
+        
+        fileNameWithoutExtension = splitFileTpl[0]
+        extension = splitFileTpl[1]
+        current_datetime = datetime.now().strftime("%Y%m%d%H%M%S")
+        newFileName = f"{fileNameWithoutExtension}_{current_datetime}{extension}"
+        file_location = os.path.join(UPLOAD_DIRECTORY,newFileName)
+
+        with open(file_location, "wb+") as file_object:
+            file_object.write(file.file.read())
+        
+        update_image_empm(db,loginEmpId,newFileName)
+        http_status_code = status.HTTP_200_OK
+        datalist = list()
+        response_dict = {
+            "status_code": http_status_code,
+            "status":True,
+            "message":"profile successfully uploaded",
+            "data":datalist
+        }
+        response_data = EmpSchemaOut(**response_dict) 
+        response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
+        return response
+    except Exception as e:
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":"Type:"+str(type(e))+", Message:"+str(e)
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
+        return response
+        
+```
