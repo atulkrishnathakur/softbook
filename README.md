@@ -1218,3 +1218,63 @@ async def login(
         loglogger.debug("RESPONSE:"+str(data))
         return response
 ```
+
+
+
+## How to upload profile images
+Reference: https://fastapi.tiangolo.com/tutorial/static-files/ 
+Reference: https://fastapi.tiangolo.com/tutorial/request-files/ 
+
+- create a directory `uploads` in project root directory
+- install the `python-multipart`
+
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install python-multipart
+```
+
+- create the `config/static_mount.py` file 
+
+```
+from fastapi.staticfiles import StaticFiles
+
+def mount_uploaded_files(app):
+    UPLOAD_DIRECTORY = "./uploads/"
+    app.mount("/uploads", StaticFiles(directory=UPLOAD_DIRECTORY), name="uploads")
+```
+
+- import the mount_uploaded_files function  
+
+```
+from fastapi import FastAPI
+from fastapi import FastAPI,Depends, HTTPException, Response, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from router.router_base import api_router
+from exception.custom_exception import CustomException,unicorn_exception_handler
+from middlewares.authchekermiddleware import AuthCheckerMiddleware
+from config.static_mount import mount_uploaded_files
+
+def include_router(app):
+    app.include_router(api_router)
+
+def start_application():
+    app = FastAPI(
+        DEBUG=True,
+        title="softbook",
+        summary="This is a fastapi project",
+        description="This is fastapi project with sqlalchemy",
+        version="1.0.0",
+        openapi_url="/softbook.json",
+        docs_url="/softbook-docs",
+        redoc_url="/softbook-redoc",
+        root_path="/api",
+        root_path_in_servers=True,
+        )
+    include_router(app)
+    mount_uploaded_files(app)
+    return app
+
+app = start_application()
+app.add_exception_handler(CustomException,unicorn_exception_handler)
+app.add_middleware(AuthCheckerMiddleware, some_attribute="example_attribute")
+```

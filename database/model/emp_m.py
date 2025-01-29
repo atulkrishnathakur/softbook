@@ -18,3 +18,4 @@ class Empm(Base):
     created_at: Mapped[DateTime] = mapped_column('created_at',DateTime, nullable=True, server_default=func.now())
     updated_at: Mapped[DateTime] = mapped_column('updated_at',DateTime,nullable=True)
     deleted_at: Mapped[DateTime] = mapped_column('deleted_at',DateTime,nullable=True,default=None)
+    image: Mapped[String] = mapped_column('image',String(255),nullable=True)
