@@ -13,6 +13,8 @@ from typing import Annotated
 from validation.emp_m import EmpSchemaOut
 from core.auth import getCurrentActiveEmp
 from datetime import datetime
+from config.jinja2_config import jinjatemplates
+from weasyprint import HTML
 
 router = APIRouter()
 
@@ -105,6 +107,64 @@ def empUploadProfile(
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         loglogger.debug("RESPONSE:"+str(response_data.dict()))
         return response
+    except Exception as e:
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":"Type:"+str(type(e))+", Message:"+str(e)
+        }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
+        return response
+
+@router.post(
+    "/get-emp-registration-details",
+    response_model=EmpSchemaOut,
+    responses={
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response},
+        status.HTTP_400_BAD_REQUEST: {"model": Status400Response}
+    },
+    name="getempregistrationdetails"
+    )
+def generateEmpRegistrationDetails(
+    loginEmp: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
+    db:Session = Depends(get_db)
+    ):
+    try:
+        GENERATED_PDF_DIR = './generated_pdf/'
+        loginEmpId = loginEmp.id
+        mname="Atul"
+
+        template = jinjatemplates.get_template("generate_emp_details.html")
+        html_content = template.render(
+            name="FastAPI User",
+            role="Developer",
+            department="IT"
+        )
+        pdf = HTML(string=html_content).write_pdf()
+
+        # Ensure the static directory exists
+        os.makedirs(GENERATED_PDF_DIR, exist_ok=True)
+        pdf_path = os.path.join(GENERATED_PDF_DIR, "emp_generated.pdf")
+
+        # Save the PDF to the static directory
+        with open(pdf_path, "wb") as pdf_file:
+            pdf_file.write(pdf)
+
+        http_status_code = status.HTTP_200_OK
+        datalist = list()
+        response_dict = {
+            "status_code": http_status_code,
+            "status":True,
+            "message":"pdf successfully generated",
+            "data":datalist
+        }
+        response_data = EmpSchemaOut(**response_dict) 
+        response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
+        return response
+        
     except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {

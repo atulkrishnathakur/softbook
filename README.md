@@ -1409,3 +1409,13 @@ app.add_exception_handler(CustomException,unicorn_exception_handler)
 #app.add_middleware(AuthCheckerMiddleware, some_attribute="example_attribute")
 
 ```
+
+# how to generate pdf
+- install the weasyprint package
+```
+(env) atul@atul-Lenovo-G570:~/softbook$ pip install weasyprint
+```
+- install the aiofile package
+```
+ (env) atul@atul-Lenovo-G570:~/softbook$ pip install aiofiles
+```

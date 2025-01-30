@@ -19,7 +19,7 @@ class AuthCheckerMiddleware(BaseHTTPMiddleware):
             "/softbook-docs",
             "/api/softbook.json",
             "/api"+api_router.url_path_for("login"),
-            "/api"+api_router.url_path_for("test")
+            "/api"+api_router.url_path_for("apitest")
             ]
         if request.url.path not in excluded_paths and (token is None or not token.startswith("Bearer ")) :
             return JSONResponse(
