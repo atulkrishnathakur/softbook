@@ -4,7 +4,7 @@ from database.session import get_db
 from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
 from validation.emp_m import EmpSchemaIn,EmpSchemaOut,Status422Response,Status400Response
 from fastapi.responses import JSONResponse, ORJSONResponse
-from database.model_functions.emp_m import save_new_empm,update_image_empm
+from database.model_functions.emp_m import save_new_empm,update_image_empm, get_emp_by_id
 from exception.custom_exception import CustomException
 from config.message import empm_message
 from config.logconfig import loglogger
@@ -134,13 +134,13 @@ def generateEmpRegistrationDetails(
     try:
         GENERATED_PDF_DIR = './generated_pdf/'
         loginEmpId = loginEmp.id
-        mname="Atul"
-
+        empmObj = get_emp_by_id(db,loginEmpId)
         template = jinjatemplates.get_template("generate_emp_details.html")
         html_content = template.render(
-            name="FastAPI User",
-            role="Developer",
-            department="IT"
+            empname=empmObj.Empm.emp_name,
+            empemail=empmObj.Empm.email,
+            empmobile=empmObj.Empm.mobile,
+            createdAt=empmObj.Empm.created_at
         )
         pdf = HTML(string=html_content).write_pdf()
 

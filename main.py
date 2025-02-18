@@ -25,9 +25,10 @@ def start_application():
         root_path="/api",
         root_path_in_servers=True,
         )
-    include_router(app)
+        
     mount_uploaded_files(app)
-    mount_generated_pdf(app)
+    mount_generated_pdf(app)    
+    include_router(app)
     return app
 
 app = start_application()
