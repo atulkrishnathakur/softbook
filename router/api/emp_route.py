@@ -15,6 +15,7 @@ from core.auth import getCurrentActiveEmp
 from datetime import datetime
 from config.jinja2_config import jinjatemplates
 from weasyprint import HTML
+from config.loadenv import envconst
 
 router = APIRouter()
 
@@ -136,17 +137,22 @@ def generateEmpRegistrationDetails(
         loginEmpId = loginEmp.id
         empmObj = get_emp_by_id(db,loginEmpId)
         template = jinjatemplates.get_template("generate_emp_details.html")
+        profileUrl = f"{envconst.BASE_URL}/api/uploads/{empmObj.Empm.image}"
+        profileDate = empmObj.Empm.created_at.strftime("%d-%B-%Y %H:%M:%S")
         html_content = template.render(
             empname=empmObj.Empm.emp_name,
             empemail=empmObj.Empm.email,
             empmobile=empmObj.Empm.mobile,
-            createdAt=empmObj.Empm.created_at
+            createdAt=profileDate,
+            profile_image=profileUrl
         )
         pdf = HTML(string=html_content).write_pdf()
 
         # Ensure the static directory exists
         os.makedirs(GENERATED_PDF_DIR, exist_ok=True)
-        pdf_path = os.path.join(GENERATED_PDF_DIR, "emp_generated.pdf")
+        currentDatetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        pdfFileName = f"emp_{currentDatetime}_.pdf"
+        pdf_path = os.path.join(GENERATED_PDF_DIR, pdfFileName)
 
         # Save the PDF to the static directory
         with open(pdf_path, "wb") as pdf_file:
