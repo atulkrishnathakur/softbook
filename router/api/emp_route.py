@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends,status,File,UploadFile
+from fastapi import APIRouter,Depends,status,File,UploadFile,BackgroundTasks
 from sqlalchemy.orm import Session
 from database.session import get_db
 from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
@@ -16,6 +16,7 @@ from datetime import datetime
 from config.jinja2_config import jinjatemplates
 from weasyprint import HTML
 from config.loadenv import envconst
+from config.fastapi_mail_config import send_email, mailconf
 
 router = APIRouter()
 
@@ -129,6 +130,7 @@ def empUploadProfile(
     name="getempregistrationdetails"
     )
 def generateEmpRegistrationDetails(
+    background_tasks:BackgroundTasks,
     loginEmp: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
     db:Session = Depends(get_db)
     ):
@@ -169,8 +171,15 @@ def generateEmpRegistrationDetails(
         response_data = EmpSchemaOut(**response_dict) 
         response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
         loglogger.debug("RESPONSE:"+str(response_data.dict()))
-        return response
-        
+
+        body = """<h1>Check the attachement for profile details</h1> """
+        subject = "Profile details"
+        toemail = ['atulk@yopmail.com']
+        ccemail = ['atulcc@yopmail.com']
+        bccemail = ['atulbcc@yopmail.com']
+        emailBody = body
+        send_email(background_tasks=background_tasks,emaiSubject=subject,emailTo=toemail,emailBody=emailBody,ccemail=ccemail,bccemail=bccemail)
+        return response        
     except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {
