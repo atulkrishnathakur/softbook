@@ -1685,3 +1685,24 @@ atul@atul-Lenovo-G570:~$ sudo systemctl reload nginx
 
 ```
 37. Now you can use http://localhost/softbook-docs in your browser
+
+38. Some notes
+ - If you want to reload changes then restart the supervisor
+   ```
+   atul@atul-Lenovo-G570:~$ sudo supervisorctl restart fastapi
+
+   ```
+- If you want to stop supervisor then run below command
+  ```
+  atul@atul-Lenovo-G570:~$ sudo supervisorctl stop fastapi
+  ```
+- If you want to start supervisor then run below command
+  ```
+  atul@atul-Lenovo-G570:~$ sudo supervisorctl start fastapi
+
+  ```
+- IF you want to run `uvicorn` for debug or development then first stop supervisor after that run uvicorn
+  ```
+  (env) atul@atul-Lenovo-G570:~/softbook$ uvicorn main:app --reload
+
+  ``` 

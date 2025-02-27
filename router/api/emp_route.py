@@ -174,12 +174,13 @@ def generateEmpRegistrationDetails(
 
         body = """<h1>Check the attachement for profile details</h1> """
         subject = "Profile details"
-        toemail = ['atulk@yopmail.com']
+        toemail = ['atulkkk@yopmail.com']
         ccemail = ['atulcc@yopmail.com']
         bccemail = ['atulbcc@yopmail.com']
         emailBody = body
-        send_email(background_tasks=background_tasks,emaiSubject=subject,emailTo=toemail,emailBody=emailBody,ccemail=ccemail,bccemail=bccemail)
-        return response        
+        attachmentsList = [pdf_path]
+        send_email(background_tasks=background_tasks,emaiSubject=subject,emailTo=toemail,emailBody=emailBody,ccemail=ccemail,bccemail=bccemail,attachmentsList=attachmentsList)
+        return response
     except Exception as e:
         http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         data = {

@@ -26,7 +26,8 @@ def send_email(
     emailTo,
     emailBody,
     ccemail=[],
-    bccemail=[]
+    bccemail=[],
+    attachmentsList=[]
     ):
     fm = FastMail(mailconf)
     mailData = MessageSchema(
@@ -35,7 +36,8 @@ def send_email(
         cc=ccemail,
         bcc=bccemail,
         body=emailBody,
-        subtype=MessageType.html
+        subtype=MessageType.html,
+        attachments=attachmentsList
         )
    
     background_tasks.add_task(fm.send_message, mailData)
