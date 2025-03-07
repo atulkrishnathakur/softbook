@@ -6,7 +6,7 @@ from router.router_base import api_router
 from router.web_router_base import web_router
 from exception.custom_exception import CustomException,unicorn_exception_handler
 from middlewares.authchekermiddleware import AuthCheckerMiddleware
-from config.static_mount import mount_uploaded_files
+from config.static_mount import mount_uploaded_files, mount_generated_pdf
 
 def include_router(app):
     app.include_router(api_router)
@@ -25,10 +25,12 @@ def start_application():
         root_path="/api",
         root_path_in_servers=True,
         )
-    include_router(app)
+        
     mount_uploaded_files(app)
+    mount_generated_pdf(app)    
+    include_router(app)
     return app
 
 app = start_application()
 app.add_exception_handler(CustomException,unicorn_exception_handler)
-#app.add_middleware(AuthCheckerMiddleware, some_attribute="example_attribute")
+app.add_middleware(AuthCheckerMiddleware, some_attribute="example_attribute")

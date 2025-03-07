@@ -16,5 +16,6 @@ class Envconst:
     TOKEN_TYPE: str = "bearer"
     AUTH_HEADER: Dict[str,str] = {"WWW-Authenticate": "Bearer"}
     API_KEY_HEADER_NAME="ACCESS-TOKEN"
+    BASE_URL = os.getenv("BASE_URL")
 
 envconst = Envconst()

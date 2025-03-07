@@ -5,6 +5,7 @@ from fastapi import Depends, status, HTTPException, Request, Header
 from router.router_base import api_router
 from exception.custom_exception import CustomException
 from config.message import auth_message
+import re
 
 # https://fastapi.tiangolo.com/tutorial/middleware/
 
@@ -19,8 +20,14 @@ class AuthCheckerMiddleware(BaseHTTPMiddleware):
             "/softbook-docs",
             "/api/softbook.json",
             "/api"+api_router.url_path_for("login"),
-            "/api"+api_router.url_path_for("test")
+            "/api"+api_router.url_path_for("apitest"),
+            "/api/uploads/.*",
+            "/api/pdf/.*"
             ]
+
+        if any(re.match(path, request.url.path) for path in excluded_paths):
+            return await call_next(request)
+
         if request.url.path not in excluded_paths and (token is None or not token.startswith("Bearer ")) :
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,

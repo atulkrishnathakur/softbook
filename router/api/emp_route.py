@@ -1,10 +1,10 @@
-from fastapi import APIRouter,Depends,status,File,UploadFile
+from fastapi import APIRouter,Depends,status,File,UploadFile,BackgroundTasks
 from sqlalchemy.orm import Session
 from database.session import get_db
 from sqlalchemy import (select,insert,update,delete,join,and_, or_ )
 from validation.emp_m import EmpSchemaIn,EmpSchemaOut,Status422Response,Status400Response
 from fastapi.responses import JSONResponse, ORJSONResponse
-from database.model_functions.emp_m import save_new_empm,update_image_empm
+from database.model_functions.emp_m import save_new_empm,update_image_empm, get_emp_by_id
 from exception.custom_exception import CustomException
 from config.message import empm_message
 from config.logconfig import loglogger
@@ -13,6 +13,10 @@ from typing import Annotated
 from validation.emp_m import EmpSchemaOut
 from core.auth import getCurrentActiveEmp
 from datetime import datetime
+from config.jinja2_config import jinjatemplates
+from weasyprint import HTML
+from config.loadenv import envconst
+from config.fastapi_mail_config import send_email, mailconf
 
 router = APIRouter()
 
@@ -112,6 +116,89 @@ def empUploadProfile(
             "status":False,
             "message":"Type:"+str(type(e))+", Message:"+str(e)
         }
+        response = JSONResponse(content=data,status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(data))
+        return response
+
+@router.post(
+    "/get-emp-registration-details",
+    response_model=EmpSchemaOut,
+    responses={
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": Status422Response},
+        status.HTTP_400_BAD_REQUEST: {"model": Status400Response}
+    },
+    name="getempregistrationdetails"
+    )
+def generateEmpRegistrationDetails(
+    background_tasks:BackgroundTasks,
+    loginEmp: Annotated[EmpSchemaOut, Depends(getCurrentActiveEmp)],
+    db:Session = Depends(get_db)
+    ):
+    try:
+        GENERATED_PDF_DIR = './generated_pdf/'
+        loginEmpId = loginEmp.id
+        empmObj = get_emp_by_id(db,loginEmpId)
+        template = jinjatemplates.get_template("generate_emp_details.html")
+        profileUrl = f"{envconst.BASE_URL}/api/uploads/{empmObj.Empm.image}"
+        profileDate = empmObj.Empm.created_at.strftime("%d-%B-%Y %H:%M:%S")
+        html_content = template.render(
+            empname=empmObj.Empm.emp_name,
+            empemail=empmObj.Empm.email,
+            empmobile=empmObj.Empm.mobile,
+            createdAt=profileDate,
+            profile_image=profileUrl
+        )
+        pdf = HTML(string=html_content).write_pdf()
+
+        # Ensure the static directory exists
+        os.makedirs(GENERATED_PDF_DIR, exist_ok=True)
+        currentDatetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        pdfFileName = f"emp_{currentDatetime}_.pdf"
+        pdf_path = os.path.join(GENERATED_PDF_DIR, pdfFileName)
+
+        # Save the PDF to the static directory
+        with open(pdf_path, "wb") as pdf_file:
+            pdf_file.write(pdf)
+
+        http_status_code = status.HTTP_200_OK
+        datalist = list()
+        response_dict = {
+            "status_code": http_status_code,
+            "status":True,
+            "message":"pdf successfully generated",
+            "data":datalist
+        }
+        response_data = EmpSchemaOut(**response_dict) 
+        response = JSONResponse(content=response_data.dict(),status_code=http_status_code)
+        loglogger.debug("RESPONSE:"+str(response_data.dict()))
+
+        body = """<h1>Check the attachement for profile details</h1> """
+        subject = "Profile details"
+        toemail = ['atulkkk@yopmail.com']
+        ccemail = ['atulcc@yopmail.com']
+        bccemail = ['atulbcc@yopmail.com']
+        emailBody = body
+        attachmentsList = [pdf_path]
+        send_email(
+            background_tasks=background_tasks,
+            emaiSubject=subject,
+            emailTo=toemail,
+            emailBody=emailBody,
+            ccemail=ccemail,
+            bccemail=bccemail,
+            attachmentsList=attachmentsList
+            )
+
+        return response
+        
+    except Exception as e:
+        http_status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+        data = {
+            "status_code": http_status_code,
+            "status":False,
+            "message":"Type:"+str(type(e))+", Message:"+str(e)
+        }
+        
         response = JSONResponse(content=data,status_code=http_status_code)
         loglogger.debug("RESPONSE:"+str(data))
         return response
